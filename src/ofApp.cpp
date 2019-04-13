@@ -9,7 +9,7 @@ void PataponGame::setup() {
 
     font_.load("arial.ttf", kFontSize);
 
-    beat_player_.load("TrimmedMetronome.wav");
+    beat_player_.load("BoostedTrimmedMetronome.mp3");
     beat_player_.setSpeed(kBeatSpeed);
     beat_player_.setVolume(kBeatVolume);
     //music_player_.load();
