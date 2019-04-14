@@ -1,4 +1,4 @@
-# Project Proposal
+`# Project Proposal
 
 I plan on creating a rhythm game with inspirations from the game [Patapon](https://en.wikipedia.org/wiki/Patapon).
 
@@ -11,3 +11,22 @@ Things to accomplish:
 - Figure out how to maintain a clock to gauge how on-tempo drumbeats are
 - Animate a walking/attacking animation
 - Sounds for drumbeats, attacks, music, etc.
+
+Expected final product:
+- A rhythm game with beat matching detection and simple graphical physics
+- Control 1 patapon (eyeball)
+- Beat the drum, accomplish tasks, but patapon will probably stay still
+
+First week:
+- I expect to have accurately implemented beat matching
+
+Second week:
+- I expect to have non animated visual sprites with boss health and damage elements working
+
+Third week:
+- I expect to have animated visuals with projectiles animated with the Box2D physics engine
+
+Extra time:
+- Improve all visuals/animations
+- Add more mechanics like walking
+- Add more patapons
