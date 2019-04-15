@@ -5,24 +5,24 @@ using namespace patapon;
 
 void PataponGame::setup() {
     ofSetWindowTitle("Patapon");
-    ofBackground(ofColor::red);
 
     font_.load("arial.ttf", kFontSize);
 
     beat_player_.load("BoostedTrimmedMetronome.mp3");
+    //beat_player_.load("TRIAL.mp3");
     beat_player_.setSpeed(kBeatSpeed);
     beat_player_.setVolume(kBeatVolume);
     //music_player_.load();
 
     std::thread t(&PataponGame::playRhythm, this);
     t.detach();
-    }
+}
 
 void PataponGame::playRhythm() {
     while(true) {
         if (current_state_ == GameState::IN_PROGRESS && (!beat_player_.isPlaying())) {
             beat_player_.play();
-            last_beat_time_ = ofGetElapsedTimef();
+            last_beat_time_ = ofGetElapsedTimeMillis();
 
         } else if (current_state_ == GameState::FINISHED) {
             break;
@@ -31,51 +31,43 @@ void PataponGame::playRhythm() {
 }
 
 void PataponGame::update() {
-    // if (should_update_) {
-    //     if (current_state_ == GameState::IN_PROGRESS) {
-    //         draw();
-    //     }
-    // }
-
-    if (current_state_ == GameState::IN_PROGRESS) {
-        draw();
-    }
+    draw();
 }
 
 void PataponGame::draw() {
     ofBackgroundGradient(ofColor::white, ofColor::gray, OF_GRADIENT_LINEAR);
     if (current_state_ == GameState::IN_PROGRESS) {
-        if (ofGetElapsedTimef() - time_since_keypress_ <= 0.35f) {
-            drawDrumName();
-        }
-
-        if (ofGetElapsedTimef() - last_beat_time_  <= 0.35f) {
+        if (ofGetElapsedTimeMillis() - last_beat_time_  <= 200) {
             drawBeatBorder();
         }
-
+        if (ofGetElapsedTimeMillis() - time_since_keypress_ <= 350) {
+            drawDrumName();
+            drawTempoFeedback();
+        }
+        
     } else if (current_state_ == GameState::FINISHED) {
         drawFinished();
     }
 }
 
 void PataponGame::drawDrumName() {
-    ofSetColor(0, 0, 0);
+    ofSetColor(ofColor::black);
 
     switch (drum_played_) {
         case OF_KEY_UP:
-            font_.drawString("CHAKA", ofGetWindowWidth() / 2, ofGetWindowHeight() / 4);
+            font_.drawString(kChaka, (ofGetWindowWidth() / 2) - (font_.getStringBoundingBox(kChaka, 0, 0).getMaxX() / 2), ofGetWindowHeight() / 4);
             break;
 
         case OF_KEY_RIGHT:
-            font_.drawString("PON", 3 * ofGetWindowWidth() / 4, ofGetWindowHeight() / 2);
+            font_.drawString(kPon, (3 * ofGetWindowWidth() / 4) - (font_.getStringBoundingBox(kPon, 0 ,0).getMaxX() / 2), ofGetWindowHeight() / 2);
             break;
 
         case OF_KEY_LEFT:
-            font_.drawString("PATA", ofGetWindowWidth() / 4, ofGetWindowHeight() / 2);
+            font_.drawString(kPata, (ofGetWindowWidth() / 4) - (font_.getStringBoundingBox(kPata, 0, 0).getMaxX() / 2), ofGetWindowHeight() / 2);
             break;
 
         case OF_KEY_DOWN:
-            font_.drawString("DON", ofGetWindowWidth() / 2, 3 * ofGetWindowHeight() / 4);
+            font_.drawString(kDon, (ofGetWindowWidth() / 2) - (font_.getStringBoundingBox(kDon, 0 ,0).getMaxX() / 2), 3 * ofGetWindowHeight() / 4);
             break;
     }
 }
@@ -93,23 +85,43 @@ void PataponGame::drawBeatBorder() {
     ofDrawRectangle(ofGetWindowWidth() / 40, ofGetWindowHeight() / 25, ofGetWindowWidth() - (2*ofGetWindowWidth()/40), ofGetWindowHeight() - (2*ofGetWindowHeight()/25));
 }
 
-double PataponGame::calculateTempoDiff() {
-    double temp = time_since_keypress_ - last_beat_time_;
-    std::cout << temp << std::endl;
+void PataponGame::drawTempoFeedback() {
+    ofSetColor(ofColor::black);
+    std::string output;
+    switch (scoreScalar_) {
+        case kMaxPointMultiplier:
+            output = "Perfect!";
+            break;
+        case kNormalPointMultiplier:
+            output = "Good!";
+            break;
+        case 0:
+            output = "Poor";
+            break;
+    }
+    font_.drawString(output, ofGetWindowWidth() / 2 - (font_.getStringBoundingBox(output, 0, 0).getMaxX() / 2), ofGetWindowHeight() / 2); 
+}
 
-    return temp;
+size_t PataponGame::calculateScoreScalar() {
+    if (tempoDiff_ > 0 && tempoDiff_ <= kMaxPointTime) {
+        return kMaxPointMultiplier;
+
+    } else if (tempoDiff_ >= kNoPointTime) {
+        return 0;
+
+    } else {
+        return kNormalPointMultiplier;
+    }
 }
 
 void PataponGame::keyPressed(const int key) {
-
     if (std::find(valid_keys_.begin(), valid_keys_.end(), key) != valid_keys_.end()) {
         drum_played_ = key;
-        should_update_ = false;
-        time_since_keypress_ = ofGetElapsedTimef();
-        tempoDiff_ = calculateTempoDiff();
+        time_since_keypress_ = ofGetElapsedTimeMillis();
+        tempoDiff_ = time_since_keypress_ - last_beat_time_;
+        std::cout << tempoDiff_ << std::endl;
+        scoreScalar_ = calculateScoreScalar();
         update();
     }
-
-    return;
 }
 
