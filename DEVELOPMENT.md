@@ -9,7 +9,8 @@
     * Border flashes with the beat
     * Some bugs with inconsistency, fixed through changing implementation
         * Changed from boolean controlled to time controlled
-
+* Adjusted how "off tempo" you can be to get a regular score or good bonus
+* Words are now correctly centered on the screen
 
 
 Notes:

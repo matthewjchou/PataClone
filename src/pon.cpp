@@ -1,6 +1,12 @@
 #include "../include/pon.h"
 
-void Pon::UpdateHealth(int delta) {
+Pon::Pon() {
+    alive_ = true;
+    health_ = kDefaultHealth;
+    strength_ = kDefaultStrength;
+}
+
+void Pon::updateHealth(int delta) {
     health_ += delta;
 
     if (health_ < 0) {
@@ -8,6 +14,6 @@ void Pon::UpdateHealth(int delta) {
     }
 }
 
-bool Pon::IsAlive() {
+bool Pon::isAlive() {
     return alive_;
 }

@@ -9,12 +9,8 @@ public:
     static const int kDefaultHealth = 50;
     static const int kDefaultStrength = 5;
 
-    Pon() {
-        alive_ = true;
-        health_ = kDefaultHealth;
-        strength_ = kDefaultStrength;
-    }
+    Pon();
 
-    void UpdateHealth(int delta);
-    bool IsAlive();
+    void updateHealth(int delta);
+    bool isAlive();
 };
