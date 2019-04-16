@@ -11,6 +11,9 @@
         * Changed from boolean controlled to time controlled
 * Adjusted how "off tempo" you can be to get a regular score or good bonus
 * Words are now correctly centered on the screen
+* Border now flashes according to the feedback (Green for perfect, yellow for good, red for poor)
+    * The words do too
+* Added a sprite to the bottom of the screen
 
 
 Notes:
