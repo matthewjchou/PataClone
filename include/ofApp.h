@@ -1,5 +1,5 @@
 #include "ofMain.h"
-#include "../include/pon.h"
+#include "../include/pon.hpp"
 #include <iostream>
 
 namespace patapon {
@@ -22,11 +22,19 @@ namespace patapon {
         PAUSED
     };
 
+    enum class Feedback {
+        PERFECT,
+        GOOD,
+        POOR
+    };
+
     class PataponGame : public ofBaseApp {
-        GameState current_state_ = GameState::IN_PROGRESS;
+        GameState current_state_;
+        Feedback tempo_feedback_;
         Pon pon_;
 
         bool beat_drawn_;
+        bool display_scalar_;
         size_t drum_played_;
 
         ofTrueTypeFont font_;
@@ -34,8 +42,9 @@ namespace patapon {
         double time_since_keypress_;
         double last_beat_time_;
 
-        double tempoDiff_;
-        size_t scoreScalar_;
+        size_t beat_count_;
+        size_t total_tempo_diff_;
+        size_t score_scalar_;
 
         ofSoundPlayer beat_player_;
         ofSoundPlayer music_player_;
@@ -50,12 +59,14 @@ namespace patapon {
         void drawBeatBorder();
         void drawTempoFeedback();
 
-        size_t calculateScoreScalar();
+        Feedback calculateTempoFeedback(int tempo_diff);
+        size_t calculateScoreScalar(size_t tempo_diff);
 
     public:
         //Run once
         void setup();
         void playRhythm();
+        void exit();
 
         //Loop
         void update();

@@ -1,4 +1,4 @@
-#include "../include/pon.h"
+#include "../include/pon.hpp"
 
 Pon::Pon() {
     alive_ = true;
