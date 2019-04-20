@@ -24,9 +24,9 @@ void PataponGame::setup() {
     pon_standing_.load("Hatapon.png");
     pon_standing_.resize(1 * pon_standing_.getWidth() / 4, 1 * pon_standing_.getHeight() / 4);
 
-    pon_walking_.load("ClearHataponWalking.png");
+    pon_walking_.load("HataponWalking.png");
     std::cout << "WALKING SIZE: " << pon_walking_.getWidth() << " " << pon_walking_.getHeight() << std::endl;
-    pon_walking_.crop(30, 27, 254, 445);
+    //pon_walking_.crop(30, 27, 254, 445);
     pon_walking_.resize(5 * pon_walking_.getWidth() / 4, 5 * pon_walking_.getHeight() / 4);
 
     beat_count_ = 0;
