@@ -56,13 +56,18 @@ namespace patapon {
         ofSoundPlayer beat_player_;
         ofSoundPlayer music_player_;
 
+        ofImage pon_logo_;
         ofImage pon_standing_;
+        ofImage pon_walking_;
         Pon pon;
 
         std::vector<size_t> valid_keys_  {OF_KEY_UP, OF_KEY_RIGHT, OF_KEY_LEFT, OF_KEY_DOWN};
 
         void drawDrumName(bool should_rotate);
         void drawFinished();
+        void drawLogo();
+        void drawPatapon();
+        void drawPataponWalking();
         void drawBeatBorder();
         void drawTempoFeedback();
 

@@ -17,10 +17,17 @@ void PataponGame::setup() {
     beat_player_.setVolume(kBeatVolume);
     //music_player_.load();
 
-    pon_standing_.load("clearpon.png");
-    
-    pon_standing_.crop(420, 300, 650, 490);
-    pon_standing_.resize(2*pon_standing_.getWidth() / 3, 2*pon_standing_.getHeight() / 3);
+    pon_logo_.load("clearpon.png");
+    pon_logo_.crop(420, 300, 650, 490);
+    pon_logo_.resize(2 * pon_logo_.getWidth() / 3, 2 * pon_logo_.getHeight() / 3);
+
+    pon_standing_.load("Hatapon.png");
+    pon_standing_.resize(1 * pon_standing_.getWidth() / 4, 1 * pon_standing_.getHeight() / 4);
+
+    pon_walking_.load("ClearHataponWalking.png");
+    std::cout << "WALKING SIZE: " << pon_walking_.getWidth() << " " << pon_walking_.getHeight() << std::endl;
+    pon_walking_.crop(30, 27, 254, 445);
+    pon_walking_.resize(5 * pon_walking_.getWidth() / 4, 5 * pon_walking_.getHeight() / 4);
 
     beat_count_ = 0;
     total_tempo_diff_ = 0;
@@ -35,7 +42,7 @@ void PataponGame::playRhythm() {
         if (current_state_ == GameState::IN_PROGRESS && (!beat_player_.isPlaying())) {
             beat_player_.play();
             //std::cout << ofGetElapsedTimeMillis() - last_beat_time_ << std::endl;
-            std::cout << "BEATPLAYED: " << ofGetElapsedTimeMillis() << std::endl;
+            //std::cout << "BEATPLAYED: " << ofGetElapsedTimeMillis() << std::endl;
             last_beat_time_ = ofGetElapsedTimeMillis();
 
         } else if (current_state_ == GameState::FINISHED) {
@@ -55,11 +62,11 @@ void PataponGame::update() {
 
 void PataponGame::draw() {
     ofBackgroundGradient(ofColor::white, ofColor::gray, OF_GRADIENT_LINEAR);
-    if (current_state_ == GameState::IN_PROGRESS) {
-        ofSetColor(ofColor::white);
-        pon_standing_.draw(ofGetWindowWidth() - pon_standing_.getWidth(),
-        ofGetWindowHeight() - pon_standing_.getHeight());
+    drawLogo();
 
+    if (current_state_ == GameState::IN_PROGRESS) {
+        drawPatapon();
+        drawPataponWalking();
         if (ofGetElapsedTimeMillis() - last_beat_time_  <= 100) {
             drawBeatBorder();
             beat_drawn_ = true;
@@ -134,17 +141,35 @@ void PataponGame::drawFinished() {
     font_.drawString("You lost :(", ofGetWindowWidth() / 2, ofGetWindowHeight() / 2);
 }
 
+void PataponGame::drawLogo() {
+    ofSetColor(ofColor::white);
+    pon_logo_.draw(ofGetWindowWidth() - pon_logo_.getWidth(),
+        ofGetWindowHeight() - pon_logo_.getHeight());
+}
+
+void PataponGame::drawPatapon() {
+    ofSetColor(ofColor::white);
+    pon_standing_.draw((ofGetWindowWidth() / 2) - (pon_standing_.getWidth() / 2),
+        (ofGetWindowHeight() / 2) - (pon_standing_.getHeight() / 2));
+}
+
+void PataponGame::drawPataponWalking() {
+    ofSetColor(ofColor::white);
+    pon_walking_.draw((ofGetWindowWidth() / 2) - (pon_walking_.getWidth()),
+        (ofGetWindowHeight() / 2) - (pon_walking_.getHeight()));
+}
+
 void PataponGame::drawBeatBorder() {
     ofSetColor(ofColor::black);
     ofNoFill();
 
     ofDrawRectangle(ofGetWindowWidth() / 45, ofGetWindowHeight() / 30,
-        ofGetWindowWidth() - (2*ofGetWindowWidth()/45),
-        ofGetWindowHeight() - (2*ofGetWindowHeight()/30));
+        ofGetWindowWidth() - (2 * ofGetWindowWidth() / 45),
+        ofGetWindowHeight() - (2 * ofGetWindowHeight() / 30));
 
     ofDrawRectangle(ofGetWindowWidth() / 40, ofGetWindowHeight() / 25,
-        ofGetWindowWidth() - (2*ofGetWindowWidth()/40),
-        ofGetWindowHeight() - (2*ofGetWindowHeight()/25));
+        ofGetWindowWidth() - (2 * ofGetWindowWidth() / 40),
+        ofGetWindowHeight() - (2 * ofGetWindowHeight() / 25));
 
     beat_drawn_ = false;
 }
@@ -158,8 +183,8 @@ void PataponGame::drawTempoFeedback() {
             ofSetColor(ofColor::green);
             if (beat_drawn_) {
                 ofDrawRectangle(ofGetWindowWidth() / 53, ofGetWindowHeight() / 38, 
-                    ofGetWindowWidth() - (2*ofGetWindowWidth() / 53), 
-                    ofGetWindowHeight() - (2*ofGetWindowHeight()/38));
+                    ofGetWindowWidth() - (2 * ofGetWindowWidth() / 53), 
+                    ofGetWindowHeight() - (2 * ofGetWindowHeight() / 38));
             }
             break;
 
@@ -168,8 +193,8 @@ void PataponGame::drawTempoFeedback() {
             ofSetColor(ofColor::yellow);
             if (beat_drawn_) {
                 ofDrawRectangle(ofGetWindowWidth() / 53, ofGetWindowHeight() / 38, 
-                    ofGetWindowWidth() - (2*ofGetWindowWidth() / 53), 
-                    ofGetWindowHeight() - (2*ofGetWindowHeight()/38));
+                    ofGetWindowWidth() - (2 * ofGetWindowWidth() / 53), 
+                    ofGetWindowHeight() - (2 * ofGetWindowHeight() / 38));
             }
             break;
 
@@ -178,8 +203,8 @@ void PataponGame::drawTempoFeedback() {
             ofSetColor(ofColor::red);
             if (beat_drawn_) {
                 ofDrawRectangle(ofGetWindowWidth() / 53, ofGetWindowHeight() / 38, 
-                    ofGetWindowWidth() - (2*ofGetWindowWidth() / 53), 
-                    ofGetWindowHeight() - (2*ofGetWindowHeight()/38));
+                    ofGetWindowWidth() - (2 * ofGetWindowWidth() / 53), 
+                    ofGetWindowHeight() - (2 * ofGetWindowHeight() / 38));
             }
             break;
     }
