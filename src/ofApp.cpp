@@ -7,10 +7,12 @@ void PataponGame::setup() {
     ofSetWindowTitle("Patapon");
     current_state_ = GameState::IN_PROGRESS;
 
+    srand(time(NULL));
+    distr_ = std::uniform_int_distribution<>(-60, 60);
+
     font_.load("arial.ttf", kFontSize);
 
     beat_player_.load("Metronome.mp3");
-    //beat_player_.load("TRIAL.mp3");
     beat_player_.setSpeed(kBeatSpeed);
     beat_player_.setVolume(kBeatVolume);
     //music_player_.load();
@@ -57,15 +59,18 @@ void PataponGame::draw() {
         ofSetColor(ofColor::white);
         pon_standing_.draw(ofGetWindowWidth() - pon_standing_.getWidth(),
         ofGetWindowHeight() - pon_standing_.getHeight());
-        //std::cout << "HERE" << ofGetElapsedTimeMillis() - last_beat_time_ << std::endl;
+
         if (ofGetElapsedTimeMillis() - last_beat_time_  <= 100) {
             drawBeatBorder();
             beat_drawn_ = true;
         }
-        if (ofGetElapsedTimeMillis() - time_since_keypress_ <= 325) {
-            drawDrumName();
-            // TODO: Make the border feedback more in sync
+        if (ofGetElapsedTimeMillis() - last_beat_time_ <= 100 
+            && ofGetElapsedTimeMillis() - time_since_keypress_ <= kNoPointTime) {
             drawTempoFeedback();
+        }
+        if (ofGetElapsedTimeMillis() - time_since_keypress_ <= 325) {
+            drawDrumName(should_rotate_);
+            should_rotate_ = false;
         }
         
     } else if (current_state_ == GameState::FINISHED) {
@@ -73,12 +78,15 @@ void PataponGame::draw() {
     }
 }
 
-void PataponGame::drawDrumName() {
+void PataponGame::drawDrumName(bool should_rotate) {
     ofSetColor(ofColor::black);
     ofPushMatrix();
 
     int x;
     int y;
+    if (should_rotate) {
+        drum_theta_ = distr_(generator_);
+    }
 
     switch (drum_played_) {
         case OF_KEY_UP:
@@ -86,7 +94,7 @@ void PataponGame::drawDrumName() {
                 - (font_.getStringBoundingBox(kChaka, 0, 0).getMaxX() / 2);
             y = ofGetWindowHeight() / 4;
             ofTranslate(x, y);
-            ofRotateZDeg(30);
+            ofRotateZDeg(drum_theta_);
             font_.drawString(kChaka, 0, 0);
             break;
 
@@ -95,7 +103,7 @@ void PataponGame::drawDrumName() {
                 - (font_.getStringBoundingBox(kPon, 0 ,0).getMaxX() / 2);
             y = ofGetWindowHeight() / 2;
             ofTranslate(x, y);
-            ofRotateZDeg(30);
+            ofRotateZDeg(drum_theta_);
             font_.drawString(kPon, 0, 0);
             break;
 
@@ -104,7 +112,7 @@ void PataponGame::drawDrumName() {
                 - (font_.getStringBoundingBox(kPata, 0, 0).getMaxX() / 2);
             y = ofGetWindowHeight() / 2;
             ofTranslate(x, y);
-            ofRotateZDeg(30);
+            ofRotateZDeg(drum_theta_);
             font_.drawString(kPata, 0, 0);
             break;
 
@@ -113,7 +121,7 @@ void PataponGame::drawDrumName() {
                 - (font_.getStringBoundingBox(kDon, 0 ,0).getMaxX() / 2);
             y = 3 * ofGetWindowHeight() / 4;
             ofTranslate(x, y);
-            ofRotateZDeg(30);
+            ofRotateZDeg(drum_theta_);
             font_.drawString(kDon, 0, 0);
             break;
     }
@@ -209,8 +217,8 @@ void PataponGame::keyPressed(const int key) {
         time_since_keypress_ = ofGetElapsedTimeMillis();
         std::cout << "KEYPRESS: " << time_since_keypress_ << std::endl;
         int tempo_diff = time_since_keypress_ - last_beat_time_;
-        //std::cout << "TEMPO_DIFF: " << tempo_diff << std::endl;
         tempo_feedback_ = calculateTempoFeedback(tempo_diff);
+        should_rotate_ = true;
         
         if (tempo_feedback_ == Feedback::POOR) {
             total_tempo_diff_ = 0;
@@ -227,6 +235,7 @@ void PataponGame::keyPressed(const int key) {
             beat_count_ = 0;
             total_tempo_diff_ = 0;
         }
+
         update();
     }
 }

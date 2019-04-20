@@ -1,6 +1,8 @@
 #include "ofMain.h"
 #include "../include/pon.hpp"
 #include <iostream>
+#include <random>
+#include <time.h>
 
 namespace patapon {
     const size_t kFontSize = 44;
@@ -33,9 +35,14 @@ namespace patapon {
         Feedback tempo_feedback_;
         Pon pon_;
 
+        std::mt19937 generator_;
+        std::uniform_int_distribution<> distr_;
+
         bool beat_drawn_;
         bool display_scalar_;
+        bool should_rotate_;
         size_t drum_played_;
+        int drum_theta_;
 
         ofTrueTypeFont font_;
 
@@ -54,7 +61,7 @@ namespace patapon {
 
         std::vector<size_t> valid_keys_  {OF_KEY_UP, OF_KEY_RIGHT, OF_KEY_LEFT, OF_KEY_DOWN};
 
-        void drawDrumName();
+        void drawDrumName(bool should_rotate);
         void drawFinished();
         void drawBeatBorder();
         void drawTempoFeedback();
