@@ -3,25 +3,20 @@
 #include <iostream>
 #include <random>
 #include <time.h>
+#include <map>
 
 namespace patapon {
-    const size_t kFontSize = 44;
-    const double kBeatSpeed = 0.35;
-    const double kBeatVolume = 1.0;
-    const double kMaxPointTime = 200;
-    const double kNoPointTime = 400;
-    const size_t kMaxPointMultiplier = 2;
-    const size_t kNormalPointMultiplier = 1;
-
-    const std::string kChaka = "CHAKA";
-    const std::string kPata = "PATA";
-    const std::string kPon = "PON";
-    const std::string kDon = "DON";
-
     enum class GameState {
         IN_PROGRESS,
         FINISHED,
         PAUSED
+    };
+
+    enum class Drum {
+        PATA    ,
+        PON,
+        CHAKA,
+        DON 
     };
 
     enum class Feedback {
@@ -30,21 +25,47 @@ namespace patapon {
         POOR
     };
 
+    enum class Command {
+        ATTACK,
+        DEFEND,
+        MOVE,
+        CHARGE,
+        JUMP,
+        RUNAWAY,
+        DANCE,
+        NOTHING
+    };
+
     class PataponGame : public ofBaseApp {
-        GameState current_state_;
-        Feedback tempo_feedback_;
-        Pon pon_;
+        const size_t kFontSize = 44;
+        const double kBeatSpeed = 0.35;
+        const double kBeatVolume = 1.0;
+        const double kMaxPointTime = 200;
+        const double kNoPointTime = 600;
+        const size_t kMaxPointMultiplier = 2;
+        const size_t kNormalPointMultiplier = 1;
+
+        const std::string kChaka = "CHAKA";
+        const std::string kPata = "PATA";
+        const std::string kPon = "PON";
+        const std::string kDon = "DON";
+
+        const std::map<size_t, Drum> kDrum_map  {{OF_KEY_UP, Drum::CHAKA}, {OF_KEY_RIGHT, Drum::PON}, {OF_KEY_LEFT, Drum::PATA}, {OF_KEY_DOWN, Drum::DON}};
 
         std::mt19937 generator_;
         std::uniform_int_distribution<> distr_;
 
+        ofTrueTypeFont font_;
+
+        GameState current_state_;
+        Feedback tempo_feedback_;
+        Pon pon_;
+
         bool beat_drawn_;
         bool display_scalar_;
         bool should_rotate_;
-        size_t drum_played_;
+        Drum drum_played_;
         int drum_theta_;
-
-        ofTrueTypeFont font_;
 
         double time_since_keypress_;
         double last_beat_time_;
@@ -61,7 +82,7 @@ namespace patapon {
         ofImage pon_walking_;
         Pon pon;
 
-        std::vector<size_t> valid_keys_  {OF_KEY_UP, OF_KEY_RIGHT, OF_KEY_LEFT, OF_KEY_DOWN};
+        std::vector<Drum> combo_;   
 
         void drawDrumName(bool should_rotate);
         void drawFinished();
@@ -73,7 +94,16 @@ namespace patapon {
 
         Feedback calculateTempoFeedback(int tempo_diff);
         size_t calculateScoreScalar(size_t tempo_diff);
+        Command handleMechanics(Feedback feedback, Drum drum, size_t tempo_diff);
 
+        std::string tempConvert(Drum d) {
+            if (d == Drum::CHAKA) return kChaka;
+            if (d == Drum::PATA) return kPata;
+            if (d == Drum::PON) return kPon;
+            if (d == Drum::DON) return kDon;
+
+            return "";
+        }
     public:
         //Run once
         void setup();

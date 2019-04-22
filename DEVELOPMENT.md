@@ -14,6 +14,11 @@
 * Border now flashes according to the feedback (Green for perfect, yellow for good, red for poor)
     * The words do too
 * Added a sprite to the bottom of the screen
+* Tuned border again, now feedback flashes with the border
+    * Not sure if this is better, now the feedback is super quick, and it doesn't display if the beat isn't flashing too
+* Refactored key pressed to work with a map containing the OF_KEYS and the Drum enum
+    * Allows for simpler code and so I can keep track of notes played
+* Now keeps track of the 4 beats played to create a combo
 
 
 Notes:

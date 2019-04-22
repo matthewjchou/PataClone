@@ -94,9 +94,9 @@ void PataponGame::drawDrumName(bool should_rotate) {
     if (should_rotate) {
         drum_theta_ = distr_(generator_);
     }
-
+        
     switch (drum_played_) {
-        case OF_KEY_UP:
+        case Drum::CHAKA:
             x = (ofGetWindowWidth() / 2) 
                 - (font_.getStringBoundingBox(kChaka, 0, 0).getMaxX() / 2);
             y = ofGetWindowHeight() / 4;
@@ -105,7 +105,7 @@ void PataponGame::drawDrumName(bool should_rotate) {
             font_.drawString(kChaka, 0, 0);
             break;
 
-        case OF_KEY_RIGHT:
+        case Drum::PON:
             x = (3 * ofGetWindowWidth() / 4) 
                 - (font_.getStringBoundingBox(kPon, 0 ,0).getMaxX() / 2);
             y = ofGetWindowHeight() / 2;
@@ -114,7 +114,7 @@ void PataponGame::drawDrumName(bool should_rotate) {
             font_.drawString(kPon, 0, 0);
             break;
 
-        case OF_KEY_LEFT:
+        case Drum::PATA:
             x = (ofGetWindowWidth() / 4) 
                 - (font_.getStringBoundingBox(kPata, 0, 0).getMaxX() / 2);
             y = ofGetWindowHeight() / 2;
@@ -123,7 +123,7 @@ void PataponGame::drawDrumName(bool should_rotate) {
             font_.drawString(kPata, 0, 0);
             break;
 
-        case OF_KEY_DOWN:
+        case Drum::DON:
             x = (ofGetWindowWidth() / 2) 
                 - (font_.getStringBoundingBox(kDon, 0 ,0).getMaxX() / 2);
             y = 3 * ofGetWindowHeight() / 4;
@@ -132,7 +132,7 @@ void PataponGame::drawDrumName(bool should_rotate) {
             font_.drawString(kDon, 0, 0);
             break;
     }
-    ofPopMatrix();
+    ofPopMatrix(); //Resets the coordinate system
 }
 
 void PataponGame::drawFinished() {
@@ -236,22 +236,16 @@ size_t PataponGame::calculateScoreScalar(size_t tempo_diff) {
     return kNormalPointMultiplier;
 }
 
-void PataponGame::keyPressed(const int key) {
-    if (std::find(valid_keys_.begin(), valid_keys_.end(), key) != valid_keys_.end()) {
-        drum_played_ = key;
-        time_since_keypress_ = ofGetElapsedTimeMillis();
-        std::cout << "KEYPRESS: " << time_since_keypress_ << std::endl;
-        int tempo_diff = time_since_keypress_ - last_beat_time_;
-        tempo_feedback_ = calculateTempoFeedback(tempo_diff);
-        should_rotate_ = true;
-        
-        if (tempo_feedback_ == Feedback::POOR) {
+Command PataponGame::handleMechanics(Feedback feedback, Drum drum, size_t tempo_diff) {
+    if (feedback == Feedback::POOR) {
             total_tempo_diff_ = 0;
             beat_count_ = 0;    
             display_scalar_ = false;
+            combo_.clear();
         } else {
             total_tempo_diff_ += tempo_diff;
             beat_count_++;
+            combo_.push_back(drum);
         }
         
         if (beat_count_ == 4) {
@@ -259,9 +253,31 @@ void PataponGame::keyPressed(const int key) {
             display_scalar_ = true;
             beat_count_ = 0;
             total_tempo_diff_ = 0;
+            std::string toPrint;
+            for (auto i : combo_) {
+                toPrint += tempConvert(i);
+                toPrint += " ";
+            }
+            std::cout << toPrint << std::endl;
+            combo_.clear();
         }
+    return Command::NOTHING;
+}
 
+void PataponGame::keyPressed(const int key) {
+    auto it = kDrum_map.find(key);
+    if (it != kDrum_map.end()) {
+        drum_played_ = it->second;
+        time_since_keypress_ = ofGetElapsedTimeMillis();
+        std::cout << "KEYPRESS: " << time_since_keypress_ << std::endl;
+        int tempo_diff = time_since_keypress_ - last_beat_time_;
+        tempo_feedback_ = calculateTempoFeedback(tempo_diff);
+        should_rotate_ = true;
+
+        Command command = handleMechanics(tempo_feedback_, it->second, tempo_diff);
+        
         update();
+
     }
 }
 
