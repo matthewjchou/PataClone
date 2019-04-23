@@ -7,6 +7,8 @@ void PataponGame::setup() {
     ofSetWindowTitle("Patapon");
     current_state_ = GameState::IN_PROGRESS;
 
+    can_play_ = true;
+
     srand(time(NULL));
     distr_ = std::uniform_int_distribution<>(-60, 60);
 
@@ -17,7 +19,7 @@ void PataponGame::setup() {
     beat_player_.setVolume(kBeatVolume);
     //music_player_.load();
 
-    pon_logo_.load("clearpon.png");
+    pon_logo_.load("ClearPon.png");
     pon_logo_.crop(420, 300, 650, 490);
     pon_logo_.resize(2 * pon_logo_.getWidth() / 3, 2 * pon_logo_.getHeight() / 3);
 
@@ -25,7 +27,6 @@ void PataponGame::setup() {
     pon_standing_.resize(1 * pon_standing_.getWidth() / 4, 1 * pon_standing_.getHeight() / 4);
 
     pon_walking_.load("HataponWalking.png");
-    std::cout << "WALKING SIZE: " << pon_walking_.getWidth() << " " << pon_walking_.getHeight() << std::endl;
     //pon_walking_.crop(30, 27, 254, 445);
     pon_walking_.resize(5 * pon_walking_.getWidth() / 4, 5 * pon_walking_.getHeight() / 4);
 
@@ -41,9 +42,8 @@ void PataponGame::playRhythm() {
     while(true) {
         if (current_state_ == GameState::IN_PROGRESS && (!beat_player_.isPlaying())) {
             beat_player_.play();
-            //std::cout << ofGetElapsedTimeMillis() - last_beat_time_ << std::endl;
-            //std::cout << "BEATPLAYED: " << ofGetElapsedTimeMillis() << std::endl;
             last_beat_time_ = ofGetElapsedTimeMillis();
+            can_play_ = true;
 
         } else if (current_state_ == GameState::FINISHED) {
             break;
@@ -214,7 +214,8 @@ void PataponGame::drawTempoFeedback() {
 }
 
 Feedback PataponGame::calculateTempoFeedback(int tempo_diff) {
-    if (tempo_diff < 0 || tempo_diff > kNoPointTime) {
+    if (!can_play_ || tempo_diff < 0 || (tempo_diff > kNoPointTime && tempo_diff < kEarlyPointTime)) {
+        std::cout << can_play_ << " " << tempo_diff << std::endl;
         return Feedback::POOR;
     } else if (tempo_diff < kMaxPointTime) {
         return Feedback::PERFECT;
@@ -241,7 +242,9 @@ Command PataponGame::handleMechanics(Feedback feedback, Drum drum, size_t tempo_
             total_tempo_diff_ = 0;
             beat_count_ = 0;    
             display_scalar_ = false;
+        Drum drum_played_;
             combo_.clear();
+
         } else {
             total_tempo_diff_ += tempo_diff;
             beat_count_++;
@@ -253,11 +256,14 @@ Command PataponGame::handleMechanics(Feedback feedback, Drum drum, size_t tempo_
             display_scalar_ = true;
             beat_count_ = 0;
             total_tempo_diff_ = 0;
+
+
             std::string toPrint;
             for (auto i : combo_) {
                 toPrint += tempConvert(i);
                 toPrint += " ";
             }
+
             std::cout << toPrint << std::endl;
             combo_.clear();
         }
@@ -271,8 +277,11 @@ void PataponGame::keyPressed(const int key) {
         time_since_keypress_ = ofGetElapsedTimeMillis();
         std::cout << "KEYPRESS: " << time_since_keypress_ << std::endl;
         int tempo_diff = time_since_keypress_ - last_beat_time_;
+        std::cout << "TIME DIFF: " << tempo_diff << std::endl;
+
         tempo_feedback_ = calculateTempoFeedback(tempo_diff);
         should_rotate_ = true;
+        can_play_ = false;
 
         Command command = handleMechanics(tempo_feedback_, it->second, tempo_diff);
         

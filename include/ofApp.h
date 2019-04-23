@@ -4,6 +4,7 @@
 #include <random>
 #include <time.h>
 #include <map>
+#include <array>
 
 namespace patapon {
     enum class GameState {
@@ -41,7 +42,8 @@ namespace patapon {
         const double kBeatSpeed = 0.35;
         const double kBeatVolume = 1.0;
         const double kMaxPointTime = 200;
-        const double kNoPointTime = 600;
+        const double kEarlyPointTime = 500;
+        const double kNoPointTime = 350;
         const size_t kMaxPointMultiplier = 2;
         const size_t kNormalPointMultiplier = 1;
 
@@ -50,7 +52,21 @@ namespace patapon {
         const std::string kPon = "PON";
         const std::string kDon = "DON";
 
-        const std::map<size_t, Drum> kDrum_map  {{OF_KEY_UP, Drum::CHAKA}, {OF_KEY_RIGHT, Drum::PON}, {OF_KEY_LEFT, Drum::PATA}, {OF_KEY_DOWN, Drum::DON}};
+        const std::map<size_t, Drum> kDrum_map  {
+            {OF_KEY_UP, Drum::CHAKA},
+            {OF_KEY_RIGHT, Drum::PON}, 
+            {OF_KEY_LEFT, Drum::PATA}, 
+            {OF_KEY_DOWN, Drum::DON}
+        };
+
+        const std::array<Drum, 4> kMoveCommand = 
+            {Drum::PATA, Drum::PATA, Drum::PATA, Drum::PON};
+        const std::array<Drum, 4> kAttackCommand = 
+            {Drum::PON, Drum::PON, Drum::PATA, Drum::PON};
+        const std::array<Drum, 4> kDefendCommand = 
+            {{Drum::CHAKA, Drum::CHAKA, Drum::PATA, Drum::PON}};
+        const std::array<Drum, 4> kChargeCommand = 
+            {{Drum::PON, Drum::PON, Drum::CHAKA, Drum::CHAKA}};
 
         std::mt19937 generator_;
         std::uniform_int_distribution<> distr_;
@@ -64,6 +80,8 @@ namespace patapon {
         bool beat_drawn_;
         bool display_scalar_;
         bool should_rotate_;
+        bool can_play_;
+
         Drum drum_played_;
         int drum_theta_;
 
