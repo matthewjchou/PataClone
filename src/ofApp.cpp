@@ -213,7 +213,7 @@ void PataponGame::drawTempoFeedback() {
         - (font_.getStringBoundingBox(output, 0, 0).getMaxX() / 2), ofGetWindowHeight() / 2); 
 }
 
-Feedback PataponGame::calculateTempoFeedback(int tempo_diff) {
+Feedback PataponGame::calculateTempoFeedback(int tempo_diff) {  
     if (!can_play_ || tempo_diff < 0 || (tempo_diff > kNoPointTime && tempo_diff < kEarlyPointTime)) {
         std::cout << can_play_ << " " << tempo_diff << std::endl;
         return Feedback::POOR;
@@ -237,12 +237,62 @@ size_t PataponGame::calculateScoreScalar(size_t tempo_diff) {
     return kNormalPointMultiplier;
 }
 
+Command PataponGame::isValidCommand(const std::vector<Drum> &combo) {
+    try {
+        if (combo.at(0) == Drum::PATA) {
+            if (combo.at(1) == Drum::PATA) {
+                if (combo.at(2) == Drum::PATA) {
+                    if (combo.at(3) == Drum::PON) {
+                        return Command::MOVE;
+                    }
+                }
+            } else if (combo.at(1) == Drum::PON) {
+                if (combo.at(2) == Drum::DON) {
+                    if (combo.at(3) == Drum::CHAKA) {
+                        return Command::DANCE;
+                    }
+                }
+            }
+        } else if (combo.at(0) == Drum::PON) {
+            if (combo.at(1) == Drum::PON) {
+                if (combo.at(2) == Drum::PATA) {
+                    if (combo.at(3) == Drum::PON) {
+                        return Command::ATTACK;
+                    }
+                } else if (combo.at(2) == Drum::CHAKA) {
+                    if (combo.at(3) == Drum::CHAKA) {
+                        return Command::CHARGE;
+                    }
+                }
+            } else if (combo.at(1) == Drum::PATA) {
+                if (combo.at(2) == Drum::PON) {
+                    if (combo.at(3) == Drum::PATA) {
+                        return Command::RUNAWAY;
+                    }
+                }
+            }
+        } else if (combo.at(0) == Drum::CHAKA) {
+            if (combo.at(1) == Drum::CHAKA) {
+                if (combo.at(2) == Drum::PATA) {
+                    if (combo.at(3) == Drum::PON) {
+                        return Command::DEFEND;
+                    }
+                }
+            }
+        }
+    } catch (...) {
+        return Command::NOTHING;
+    }
+
+    return Command::FAIL;
+}
+
 Command PataponGame::handleMechanics(Feedback feedback, Drum drum, size_t tempo_diff) {
     if (feedback == Feedback::POOR) {
             total_tempo_diff_ = 0;
             beat_count_ = 0;    
             display_scalar_ = false;
-        Drum drum_played_;
+            Drum drum_played_;
             combo_.clear();
 
         } else {
@@ -250,8 +300,12 @@ Command PataponGame::handleMechanics(Feedback feedback, Drum drum, size_t tempo_
             beat_count_++;
             combo_.push_back(drum);
         }
-        
-        if (beat_count_ == 4) {
+
+        Command current_command = isValidCommand(combo_);  
+        if (current_command == Command::FAIL) {
+            combo_.clear();
+            std::cout << tempConvertCommand(current_command) << std::endl;
+        } else if (current_command != Command::NOTHING) {
             score_scalar_ = calculateScoreScalar(total_tempo_diff_);
             display_scalar_ = true;
             beat_count_ = 0;
@@ -263,16 +317,19 @@ Command PataponGame::handleMechanics(Feedback feedback, Drum drum, size_t tempo_
                 toPrint += tempConvert(i);
                 toPrint += " ";
             }
+            toPrint += '\n';
+            toPrint += tempConvertCommand(current_command);
 
             std::cout << toPrint << std::endl;
             combo_.clear();
         }
+
     return Command::NOTHING;
 }
 
 void PataponGame::keyPressed(const int key) {
-    auto it = kDrum_map.find(key);
-    if (it != kDrum_map.end()) {
+    auto it = kDrumMap.find(key);
+    if (it != kDrumMap.end()) {
         drum_played_ = it->second;
         time_since_keypress_ = ofGetElapsedTimeMillis();
         std::cout << "KEYPRESS: " << time_since_keypress_ << std::endl;

@@ -14,7 +14,7 @@ namespace patapon {
     };
 
     enum class Drum {
-        PATA    ,
+        PATA,
         PON,
         CHAKA,
         DON 
@@ -34,7 +34,8 @@ namespace patapon {
         JUMP,
         RUNAWAY,
         DANCE,
-        NOTHING
+        NOTHING,
+        FAIL
     };
 
     class PataponGame : public ofBaseApp {
@@ -43,7 +44,7 @@ namespace patapon {
         const double kBeatVolume = 1.0;
         const double kMaxPointTime = 200;
         const double kEarlyPointTime = 500;
-        const double kNoPointTime = 350;
+        const double kNoPointTime = 425;
         const size_t kMaxPointMultiplier = 2;
         const size_t kNormalPointMultiplier = 1;
 
@@ -52,7 +53,7 @@ namespace patapon {
         const std::string kPon = "PON";
         const std::string kDon = "DON";
 
-        const std::map<size_t, Drum> kDrum_map  {
+        const std::map<size_t, Drum> kDrumMap  {
             {OF_KEY_UP, Drum::CHAKA},
             {OF_KEY_RIGHT, Drum::PON}, 
             {OF_KEY_LEFT, Drum::PATA}, 
@@ -112,6 +113,7 @@ namespace patapon {
 
         Feedback calculateTempoFeedback(int tempo_diff);
         size_t calculateScoreScalar(size_t tempo_diff);
+        Command isValidCommand(const std::vector<Drum> &combo);
         Command handleMechanics(Feedback feedback, Drum drum, size_t tempo_diff);
 
         std::string tempConvert(Drum d) {
@@ -119,6 +121,18 @@ namespace patapon {
             if (d == Drum::PATA) return kPata;
             if (d == Drum::PON) return kPon;
             if (d == Drum::DON) return kDon;
+
+            return "";
+        }
+
+        std::string tempConvertCommand(Command c) {
+            if (c == Command::ATTACK) return "ATTACK";
+            if (c == Command::DEFEND) return "DEFEND";
+            if (c == Command::MOVE) return "MOVE";
+            if (c == Command::CHARGE) return "CHARGE";
+            if (c == Command::DANCE) return "DANCE";
+            if (c == Command::NOTHING) return "NOTHING";
+            if (c == Command::FAIL) return "FAIL";
 
             return "";
         }
