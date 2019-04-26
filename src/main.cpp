@@ -7,5 +7,5 @@ int main() {
     ofSetupOpenGL(2560, 1440, DISPLAY_MODE);
     ofSetFrameRate(60);
 
-    ofRunApp(new patapon::PataponGame());
+    ofRunApp(new patapongame::Game());
 }
