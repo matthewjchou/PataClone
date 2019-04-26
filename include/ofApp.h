@@ -103,7 +103,7 @@ namespace patapon {
 
         std::vector<Drum> combo_;   
 
-        void drawDrumName(bool should_rotate);
+        void drawDrumName(const bool should_rotate);
         void drawFinished();
         void drawLogo();
         void drawPatapon();
@@ -111,10 +111,10 @@ namespace patapon {
         void drawBeatBorder();
         void drawTempoFeedback();
 
-        Feedback calculateTempoFeedback(int tempo_diff);
-        size_t calculateScoreScalar(size_t tempo_diff);
+        Feedback calculateTempoFeedback(const int tempo_diff);
+        size_t calculateScoreScalar(const size_t tempo_diff);
         Command isValidCommand(const std::vector<Drum> &combo);
-        Command handleMechanics(Feedback feedback, Drum drum, size_t tempo_diff);
+        Command handleMechanics(const Feedback feedback, const Drum drum, const size_t tempo_diff);
 
         std::string tempConvert(Drum d) {
             if (d == Drum::CHAKA) return kChaka;
@@ -152,4 +152,4 @@ namespace patapon {
 
 
 
-}
+}//namespace patapon

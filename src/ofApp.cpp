@@ -71,7 +71,7 @@ void PataponGame::draw() {
             drawBeatBorder();
             beat_drawn_ = true;
         }
-        if (ofGetElapsedTimeMillis() - last_beat_time_ <= 100 
+        if (ofGetElapsedTimeMillis() - last_beat_time_ <= 200 
             && ofGetElapsedTimeMillis() - time_since_keypress_ <= kNoPointTime) {
             drawTempoFeedback();
         }
@@ -85,7 +85,7 @@ void PataponGame::draw() {
     }
 }
 
-void PataponGame::drawDrumName(bool should_rotate) {
+void PataponGame::drawDrumName(const bool should_rotate) {
     ofSetColor(ofColor::black);
     ofPushMatrix();
 
@@ -213,9 +213,8 @@ void PataponGame::drawTempoFeedback() {
         - (font_.getStringBoundingBox(output, 0, 0).getMaxX() / 2), ofGetWindowHeight() / 2); 
 }
 
-Feedback PataponGame::calculateTempoFeedback(int tempo_diff) {  
+Feedback PataponGame::calculateTempoFeedback(const int tempo_diff) {  
     if (!can_play_ || tempo_diff < 0 || (tempo_diff > kNoPointTime && tempo_diff < kEarlyPointTime)) {
-        std::cout << can_play_ << " " << tempo_diff << std::endl;
         return Feedback::POOR;
     } else if (tempo_diff < kMaxPointTime) {
         return Feedback::PERFECT;
@@ -224,7 +223,7 @@ Feedback PataponGame::calculateTempoFeedback(int tempo_diff) {
     return Feedback::GOOD;
 }
 
-size_t PataponGame::calculateScoreScalar(size_t tempo_diff) {
+size_t PataponGame::calculateScoreScalar(const size_t tempo_diff) {
     size_t avg_diff = tempo_diff / 4;
 
     std::cout << "AVG: " << avg_diff << std::endl;
@@ -287,8 +286,8 @@ Command PataponGame::isValidCommand(const std::vector<Drum> &combo) {
     return Command::FAIL;
 }
 
-Command PataponGame::handleMechanics(Feedback feedback, Drum drum, size_t tempo_diff) {
-    if (feedback == Feedback::POOR) {
+Command PataponGame::handleMechanics(const Feedback feedback, const Drum drum, const size_t tempo_diff) {
+    if (feedback == Feedback::POOR) { //If beat is missed, reset the counter and the combo 
             total_tempo_diff_ = 0;
             beat_count_ = 0;    
             display_scalar_ = false;
@@ -302,9 +301,11 @@ Command PataponGame::handleMechanics(Feedback feedback, Drum drum, size_t tempo_
         }
 
         Command current_command = isValidCommand(combo_);  
-        if (current_command == Command::FAIL) {
+        if (current_command == Command::FAIL) { //If the notes aren't part of a command, reset combo
             combo_.clear();
-            std::cout << tempConvertCommand(current_command) << std::endl;
+            total_tempo_diff_ = 0;
+            beat_count_ = 0;
+            std::cout << tempConvertCommand(current_command) << std::endl << std::endl;
         } else if (current_command != Command::NOTHING) {
             score_scalar_ = calculateScoreScalar(total_tempo_diff_);
             display_scalar_ = true;
@@ -319,6 +320,7 @@ Command PataponGame::handleMechanics(Feedback feedback, Drum drum, size_t tempo_
             }
             toPrint += '\n';
             toPrint += tempConvertCommand(current_command);
+            toPrint += '\n';
 
             std::cout << toPrint << std::endl;
             combo_.clear();
