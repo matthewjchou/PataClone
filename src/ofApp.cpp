@@ -28,7 +28,7 @@ void Game::setup() {
 
     pon_walking_.load("HataponWalking.png");
     //pon_walking_.crop(30, 27, 254, 445);
-    pon_walking_.resize(5 * pon_walking_.getWidth() / 4, 5 * pon_walking_.getHeight() / 4);
+    pon_walking_.resize(4 * pon_walking_.getWidth() / 3, 4 * pon_walking_.getHeight() / 3);
 
     patapon.beat_count_ = 0;
     patapon.total_tempo_diff_ = 0;
@@ -228,7 +228,6 @@ void Game::keyPressed(const int key) {
         Command command = patapon.handleMechanics(tempo_feedback_, it->second, tempo_diff);
         
         update();
-
     }
 }
 

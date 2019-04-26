@@ -24,3 +24,94 @@ TEST_CASE("CalculateScoreScalar") {
         REQUIRE(1 == patapon.calculateScoreScalar(424 * 4));
     }
 }
+
+TEST_CASE("CalculateTempoFeedback") {
+    patapon.can_play_ = true;
+    
+    SECTION("Perfect") {
+        REQUIRE(Feedback::PERFECT == patapon.calculateTempoFeedback(0));
+        REQUIRE(Feedback::PERFECT == patapon.calculateTempoFeedback(100));
+        REQUIRE(Feedback::PERFECT == patapon.calculateTempoFeedback(200));
+    }
+
+    SECTION("Good") {
+        REQUIRE(Feedback::GOOD == patapon.calculateTempoFeedback(201));
+        REQUIRE(Feedback::GOOD == patapon.calculateTempoFeedback(300));
+        REQUIRE(Feedback::GOOD == patapon.calculateTempoFeedback(424));
+        REQUIRE(Feedback::GOOD == patapon.calculateTempoFeedback(500));
+        REQUIRE(Feedback::GOOD == patapon.calculateTempoFeedback(550));
+    }
+
+    SECTION("Poor") {
+        REQUIRE(Feedback::POOR == patapon.calculateTempoFeedback(425));
+        REQUIRE(Feedback::POOR == patapon.calculateTempoFeedback(457));
+        REQUIRE(Feedback::POOR == patapon.calculateTempoFeedback(499));
+    }
+}
+
+TEST_CASE("Commands") {
+    std::vector<Drum> combo;
+    combo.clear();
+
+    SECTION("MOVE") {
+        combo.push_back(Drum::PATA);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::PATA);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::PATA);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::PON);
+        REQUIRE(Command::MOVE == patapon.isValidCommand(combo));
+    }
+
+    SECTION("ATTACK") {
+        combo.push_back(Drum::PON);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::PON);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::PATA);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::PON);
+        REQUIRE(Command::ATTACK == patapon.isValidCommand(combo));
+    }
+
+    SECTION("DEFEND") {
+        combo.push_back(Drum::CHAKA);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::CHAKA);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::PATA);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::PON);
+        REQUIRE(Command::DEFEND == patapon.isValidCommand(combo));
+    }
+
+    SECTION("CHARGE") {
+        combo.push_back(Drum::PON);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::PON);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::CHAKA);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::CHAKA);
+        REQUIRE(Command::CHARGE == patapon.isValidCommand(combo));
+    }
+
+    SECTION("DANCE") {
+        combo.push_back(Drum::PATA);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::PON);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::DON);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::CHAKA);
+        REQUIRE(Command::DANCE == patapon.isValidCommand(combo));
+    }
+
+    SECTION("FAIL") {
+        combo.push_back(Drum::PATA);
+        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        combo.push_back(Drum::CHAKA);
+        REQUIRE(Command::FAIL == patapon.isValidCommand(combo));
+    }
+}

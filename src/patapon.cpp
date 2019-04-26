@@ -3,9 +3,9 @@
 using namespace patapongame;
 
 Feedback Patapon::calculateTempoFeedback(const int tempo_diff) {  
-    if (!can_play_ || tempo_diff < 0 || (tempo_diff > kNoPointTime && tempo_diff < kEarlyPointTime)) {
+    if (!can_play_ || tempo_diff < 0 || (tempo_diff >= kNoPointTime && tempo_diff < kEarlyPointTime)) {
         return Feedback::POOR;
-    } else if (tempo_diff < kMaxPointTime) {
+    } else if (tempo_diff <= kMaxPointTime) {
         return Feedback::PERFECT;
     }
     
