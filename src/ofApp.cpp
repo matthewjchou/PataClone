@@ -8,6 +8,9 @@ void Game::setup() {
     current_state_ = GameState::IN_PROGRESS;
 
     patapon.can_play_ = true;
+    executing_command_ = false;
+
+    beat_count_ = 0;
 
     srand(time(NULL));
     distr_ = std::uniform_int_distribution<>(-60, 60);
@@ -26,11 +29,11 @@ void Game::setup() {
     pon_standing_.load("Hatapon.png");
     pon_standing_.resize(1 * pon_standing_.getWidth() / 4, 1 * pon_standing_.getHeight() / 4);
 
-    pon_walking_.load("HataponWalking.png");
+    //pon_walking_.load("HataponWalking.png");
     //pon_walking_.crop(30, 27, 254, 445);
-    pon_walking_.resize(4 * pon_walking_.getWidth() / 3, 4 * pon_walking_.getHeight() / 3);
+    //pon_walking_.resize(3 * pon_walking_.getWidth() / 2, 3 * pon_walking_.getHeight() / 2);
 
-    patapon.beat_count_ = 0;
+    patapon.input_count_ = 0;
     patapon.total_tempo_diff_ = 0;
 
     last_beat_time_ = 0;
@@ -44,6 +47,13 @@ void Game::playRhythm() {
             beat_player_.play();
             last_beat_time_ = ofGetElapsedTimeMillis();
             patapon.can_play_ = true;
+            if (executing_command_) {
+                beat_count_++;
+                if (beat_count_ == 5) {
+                    beat_count_ = 0;
+                    executing_command_ = false;
+                }
+            }
 
         } else if (current_state_ == GameState::FINISHED) {
             break;
@@ -66,7 +76,7 @@ void Game::draw() {
 
     if (current_state_ == GameState::IN_PROGRESS) {
         drawPatapon();
-        drawPataponWalking();
+        //drawPataponWalking();
         if (ofGetElapsedTimeMillis() - last_beat_time_  <= 100) {
             drawBeatBorder();
             beat_drawn_ = true;
@@ -209,13 +219,13 @@ void Game::drawTempoFeedback() {
             break;
     }
     //Subtracts half the length of the bounding box of the string to actually center it
-    font_.drawString(output, ofGetWindowWidth() / 2 
+   font_.drawString(output, ofGetWindowWidth() / 2 
         - (font_.getStringBoundingBox(output, 0, 0).getMaxX() / 2), ofGetWindowHeight() / 2); 
 }
 
 void Game::keyPressed(const int key) {
     auto it = kDrumMap.find(key);
-    if (it != kDrumMap.end()) {
+    if (it != kDrumMap.end() && !executing_command_) {
         drum_played_ = it->second;
         time_since_keypress_ = ofGetElapsedTimeMillis();
         std::cout << "KEYPRESS: " << time_since_keypress_ << std::endl;
@@ -226,6 +236,9 @@ void Game::keyPressed(const int key) {
         patapon.can_play_ = false;
 
         Command command = patapon.handleMechanics(tempo_feedback_, it->second, tempo_diff);
+        if (command != Command::NOTHING && command != Command::FAIL) {
+            executing_command_ = true;
+        }
         
         update();
     }

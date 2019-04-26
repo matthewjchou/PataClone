@@ -37,9 +37,11 @@ namespace patapongame {
 
         bool beat_drawn_;
         bool should_rotate_;
+        bool executing_command_;
 
         Drum drum_played_;
         int drum_theta_;
+        size_t beat_count_;
 
         double time_since_keypress_;
         double last_beat_time_;

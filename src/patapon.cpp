@@ -25,7 +25,7 @@ size_t Patapon::calculateScoreScalar(const size_t total_tempo_diff) {
     return kNormalPointMultiplier;
 }
 
-Command Patapon::isValidCommand(const std::vector<Drum> &combo) {
+Command Patapon::determineCommand(const std::vector<Drum> &combo) {
     try {
         if (combo.at(0) == Drum::PATA) {
             if (combo.at(1) == Drum::PATA) {
@@ -78,27 +78,27 @@ Command Patapon::isValidCommand(const std::vector<Drum> &combo) {
 Command Patapon::handleMechanics(const Feedback feedback, const Drum drum, const size_t tempo_diff) {
     if (feedback == Feedback::POOR) { //If beat is missed, reset the counter and the combo 
             total_tempo_diff_ = 0;
-            beat_count_ = 0;    
+            input_count_ = 0;    
             display_scalar_ = false;
             Drum drum_played_;
             combo_.clear();
 
         } else {
             total_tempo_diff_ += tempo_diff;
-            beat_count_++;
+            input_count_++;
             combo_.push_back(drum);
         }
 
-        Command current_command = isValidCommand(combo_);  
+        Command current_command = determineCommand(combo_);  
         if (current_command == Command::FAIL) { //If the notes aren't part of a command, reset combo
             combo_.clear();
             total_tempo_diff_ = 0;
-            beat_count_ = 0;
+            input_count_ = 0;
             std::cout << tempConvertCommand(current_command) << std::endl << std::endl;
         } else if (current_command != Command::NOTHING) {
             score_scalar_ = calculateScoreScalar(total_tempo_diff_);
             display_scalar_ = true;
-            beat_count_ = 0;
+            input_count_ = 0;
             total_tempo_diff_ = 0;
 
 
@@ -113,6 +113,8 @@ Command Patapon::handleMechanics(const Feedback feedback, const Drum drum, const
 
             std::cout << toPrint << std::endl;
             combo_.clear();
+
+            return current_command;
         }
 
     return Command::NOTHING;

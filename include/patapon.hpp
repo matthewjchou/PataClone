@@ -70,6 +70,7 @@ namespace patapongame {
             if (c == Command::MOVE) return "MOVE";
             if (c == Command::CHARGE) return "CHARGE";
             if (c == Command::DANCE) return "DANCE";
+            if (c == Command::RUNAWAY) return "RUNAWAY";
             if (c == Command::NOTHING) return "NOTHING";
             if (c == Command::FAIL) return "FAIL";
 
@@ -79,13 +80,13 @@ namespace patapongame {
         bool can_play_;
         bool display_scalar_;
 
-        size_t beat_count_;
+        size_t input_count_;
         size_t total_tempo_diff_;
         size_t score_scalar_;
 
         size_t calculateScoreScalar(const size_t total_tempo_diff);
         Feedback calculateTempoFeedback(const int tempo_diff);
-        Command isValidCommand(const std::vector<Drum> &combo);
+        Command determineCommand(const std::vector<Drum> &combo);
         Command handleMechanics(const Feedback feedback, const Drum drum, const size_t tempo_diff);
 
     };
