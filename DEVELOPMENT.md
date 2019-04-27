@@ -19,6 +19,13 @@
 * Refactored key pressed to work with a map containing the OF_KEYS and the Drum enum
     * Allows for simpler code and so I can keep track of notes played
 * Now keeps track of the 4 beats played to create a combo
+* Combo is now analyzed and turned into a command, if the combo is determined to not form a command halfway through, it fails
+* After finishing command, you must now wait 4 beats to play another command
+    * 4 beats to play, 4 beats to execute command
+* Refactored project structure
+    * Game extends ofBaseApp and Patapon is an object that Game uses so the methods in Patapon can be unit tested
+    * Changed namespace from patapon to patapongame to avoid naming/namespace problems
+* Integrated ofxBox2d
 
 
 Notes:
