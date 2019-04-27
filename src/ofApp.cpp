@@ -7,6 +7,8 @@ void Game::setup() {
     ofSetWindowTitle("Patapon");
     current_state_ = GameState::IN_PROGRESS;
 
+    box2d.init();
+
     patapon.can_play_ = true;
     executing_command_ = false;
 
@@ -238,6 +240,7 @@ void Game::keyPressed(const int key) {
         Command command = patapon.handleMechanics(tempo_feedback_, it->second, tempo_diff);
         if (command != Command::NOTHING && command != Command::FAIL) {
             executing_command_ = true;
+            patapon.executeCommand(command);
         }
         
         update();

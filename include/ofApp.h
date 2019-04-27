@@ -1,6 +1,7 @@
 #include "ofMain.h"
 #include "../include/patapon.hpp"
 #include "../include/pon.hpp"
+#include "ofxBox2d.h"
 #include <iostream>
 #include <random>
 #include <time.h>
@@ -33,7 +34,6 @@ namespace patapongame {
 
         GameState current_state_;
         Feedback tempo_feedback_;
-        Pon pon_;
 
         bool beat_drawn_;
         bool should_rotate_;
@@ -55,6 +55,8 @@ namespace patapongame {
 
         Patapon patapon = Patapon();
         Pon pon;
+
+        ofxBox2d box2d;
         
         void drawDrumName(const bool should_rotate);
         void drawFinished();

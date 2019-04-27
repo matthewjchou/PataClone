@@ -88,6 +88,7 @@ namespace patapongame {
         Feedback calculateTempoFeedback(const int tempo_diff);
         Command determineCommand(const std::vector<Drum> &combo);
         Command handleMechanics(const Feedback feedback, const Drum drum, const size_t tempo_diff);
+        void executeCommand(const Command command);
 
     };
 

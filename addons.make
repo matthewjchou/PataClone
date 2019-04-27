@@ -1,3 +1,4 @@
 ofxGui
 ofxThreadedImageLoader
 ofxUnitTests
+ofxBox2d

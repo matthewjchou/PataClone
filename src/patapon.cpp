@@ -119,3 +119,7 @@ Command Patapon::handleMechanics(const Feedback feedback, const Drum drum, const
 
     return Command::NOTHING;
 }
+
+void Patapon::executeCommand(const Command command) {
+    
+}
