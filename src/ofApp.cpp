@@ -8,6 +8,7 @@ void Game::setup() {
     current_state_ = GameState::IN_PROGRESS;
 
     box2d.init();
+    box2d.setGravity(0, 10);
 
     patapon.can_play_ = true;
     executing_command_ = false;
@@ -69,6 +70,9 @@ void Game::exit() {
 }
 
 void Game::update() {
+    if (!executing_command_ && ofGetElapsedTimeMillis() - time_since_keypress_ > 1200) {
+        patapon.resetCombo();
+    }
     draw();
 }
 
@@ -79,6 +83,7 @@ void Game::draw() {
     if (current_state_ == GameState::IN_PROGRESS) {
         drawPatapon();
         //drawPataponWalking();
+        box2d.drawGround();
         if (ofGetElapsedTimeMillis() - last_beat_time_  <= 100) {
             drawBeatBorder();
             beat_drawn_ = true;

@@ -77,11 +77,7 @@ Command Patapon::determineCommand(const std::vector<Drum> &combo) {
 
 Command Patapon::handleMechanics(const Feedback feedback, const Drum drum, const size_t tempo_diff) {
     if (feedback == Feedback::POOR) { //If beat is missed, reset the counter and the combo 
-            total_tempo_diff_ = 0;
-            input_count_ = 0;    
-            display_scalar_ = false;
-            Drum drum_played_;
-            combo_.clear();
+            resetCombo();
 
         } else {
             total_tempo_diff_ += tempo_diff;
@@ -91,17 +87,11 @@ Command Patapon::handleMechanics(const Feedback feedback, const Drum drum, const
 
         Command current_command = determineCommand(combo_);  
         if (current_command == Command::FAIL) { //If the notes aren't part of a command, reset combo
-            combo_.clear();
-            total_tempo_diff_ = 0;
-            input_count_ = 0;
+            resetCombo();
             std::cout << tempConvertCommand(current_command) << std::endl << std::endl;
         } else if (current_command != Command::NOTHING) {
             score_scalar_ = calculateScoreScalar(total_tempo_diff_);
-            display_scalar_ = true;
-            input_count_ = 0;
-            total_tempo_diff_ = 0;
-
-
+    
             std::string toPrint;
             for (auto i : combo_) {
                 toPrint += tempConvert(i);
@@ -112,7 +102,8 @@ Command Patapon::handleMechanics(const Feedback feedback, const Drum drum, const
             toPrint += '\n';
 
             std::cout << toPrint << std::endl;
-            combo_.clear();
+
+            resetCombo();
 
             return current_command;
         }
@@ -122,4 +113,12 @@ Command Patapon::handleMechanics(const Feedback feedback, const Drum drum, const
 
 void Patapon::executeCommand(const Command command) {
     
+}
+
+void Patapon::resetCombo() {
+    combo_.clear();
+    total_tempo_diff_ = 0;
+    input_count_ = 0;
+
+    std::cout << "RESETTING COMBO" << std::endl;
 }

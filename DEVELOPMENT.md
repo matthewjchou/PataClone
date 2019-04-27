@@ -26,9 +26,3 @@
     * Game extends ofBaseApp and Patapon is an object that Game uses so the methods in Patapon can be unit tested
     * Changed namespace from patapon to patapongame to avoid naming/namespace problems
 * Integrated ofxBox2d
-
-
-Notes:
-- work on rhythm matching 
-    
- 

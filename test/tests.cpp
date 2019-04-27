@@ -55,63 +55,63 @@ TEST_CASE("Commands") {
 
     SECTION("MOVE") {
         combo.push_back(Drum::PATA);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PATA);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PATA);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PON);
-        REQUIRE(Command::MOVE == patapon.isValidCommand(combo));
+        REQUIRE(Command::MOVE == patapon.determineCommand(combo));
     }
 
     SECTION("ATTACK") {
         combo.push_back(Drum::PON);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PON);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PATA);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PON);
-        REQUIRE(Command::ATTACK == patapon.isValidCommand(combo));
+        REQUIRE(Command::ATTACK == patapon.determineCommand(combo));
     }
 
     SECTION("DEFEND") {
         combo.push_back(Drum::CHAKA);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::CHAKA);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PATA);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PON);
-        REQUIRE(Command::DEFEND == patapon.isValidCommand(combo));
+        REQUIRE(Command::DEFEND == patapon.determineCommand(combo));
     }
 
     SECTION("CHARGE") {
         combo.push_back(Drum::PON);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PON);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::CHAKA);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::CHAKA);
-        REQUIRE(Command::CHARGE == patapon.isValidCommand(combo));
+        REQUIRE(Command::CHARGE == patapon.determineCommand(combo));
     }
 
     SECTION("DANCE") {
         combo.push_back(Drum::PATA);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PON);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::DON);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::CHAKA);
-        REQUIRE(Command::DANCE == patapon.isValidCommand(combo));
+        REQUIRE(Command::DANCE == patapon.determineCommand(combo));
     }
 
     SECTION("FAIL") {
         combo.push_back(Drum::PATA);
-        REQUIRE(Command::NOTHING == patapon.isValidCommand(combo));
+        REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::CHAKA);
-        REQUIRE(Command::FAIL == patapon.isValidCommand(combo));
+        REQUIRE(Command::FAIL == patapon.determineCommand(combo));
     }
 }
