@@ -1,12 +1,14 @@
 #include "ofMain.h"
 #include "../include/patapon.hpp"
 #include "../include/pon.hpp"
+#include "../include/boss.hpp"
 #include "ofxBox2d.h"
 #include <iostream>
 #include <random>
 #include <time.h>
 #include <map>
 #include <array>
+#include <tuple>
 
 namespace patapongame {
     enum class GameState {
@@ -48,28 +50,43 @@ namespace patapongame {
 
         ofSoundPlayer beat_player_;
         ofSoundPlayer music_player_;
+        ofSoundPlayer win_player_;
 
         ofImage pon_logo_;
         ofImage pon_standing_;
         ofImage pon_walking_;
+        ofImage boss_gigantus_;
 
         Patapon patapon = Patapon();
-        Pon pon;
+        Pon pon = Pon();
+        Boss boss = Boss("Gigantus", 1000, 200);
 
         ofxBox2d box2d;
+        //std::vector<shared_ptr<Arrow>>
+
+        std::tuple<bool, size_t> charge_scalar_;
         
         void drawDrumName(const bool should_rotate);
         void drawFinished();
+
         void drawLogo();
         void drawPatapon();
         void drawPataponWalking();
+
         void drawBeatBorder();
         void drawTempoFeedback();
+
+        void drawVolley();
+
+        void executeCommand(const Command command);
+
+        void contactStart(ofxBox2dContactArgs &e);
 
     public:
         //Run once
         void setup();
         void playRhythm();
+        void playWinSound();
         void exit();
 
         //Loop

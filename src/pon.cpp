@@ -6,6 +6,14 @@ Pon::Pon() {
     strength_ = kDefaultStrength;
 }
 
+int Pon::getHealth() {
+    return health_;
+}
+
+size_t Pon::getStrength() {
+    return strength_;
+}
+
 void Pon::updateHealth(int delta) {
     health_ += delta;
 

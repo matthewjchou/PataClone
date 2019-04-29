@@ -111,10 +111,6 @@ Command Patapon::handleMechanics(const Feedback feedback, const Drum drum, const
     return Command::NOTHING;
 }
 
-void Patapon::executeCommand(const Command command) {
-    
-}
-
 void Patapon::resetCombo() {
     combo_.clear();
     total_tempo_diff_ = 0;

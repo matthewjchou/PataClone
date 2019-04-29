@@ -1,16 +1,23 @@
 #pragma once
 
+#include <string>
+
 class Pon {
     bool alive_;
     int health_;
-    int strength_;
+    size_t strength_;
 
 public:
-    static const int kDefaultHealth = 50;
-    static const int kDefaultStrength = 5;
+    static const int kDefaultHealth = 500;
+    static const size_t kDefaultStrength = 50;
 
     Pon();
 
+    int getHealth();
+    size_t getStrength();
+
     void updateHealth(int delta);
     bool isAlive();
+
+
 };
