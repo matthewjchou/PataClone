@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ofMain.h"
 #include <string>
 
 namespace patapongame {
@@ -7,13 +8,16 @@ namespace patapongame {
         std::string name_;
         int health_;
         size_t strength_;
+
+        ofImage image_;
     public:
         Boss();
-        Boss(std::string set_name, size_t set_health, size_t set_strength);
+        Boss(std::string set_name, size_t set_health, size_t set_strength, std::string image_name);
 
         std::string getName();
         int getHealth();
         size_t getStrength(); 
+        ofImage & getImage();
 
         bool takeDamage(size_t attack_strength);
     };

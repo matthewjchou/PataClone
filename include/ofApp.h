@@ -55,13 +55,13 @@ namespace patapongame {
         ofImage pon_logo_;
         ofImage pon_standing_;
         ofImage pon_walking_;
-        ofImage boss_gigantus_;
 
         Patapon patapon = Patapon();
-        Pon pon = Pon();
-        Boss boss = Boss("Gigantus", 1000, 200);
+        Pon pon_ = Pon();
+        Boss boss_;
 
         ofxBox2d box2d;
+        ofxBox2dCircle box2dCircle;
         //std::vector<shared_ptr<Arrow>>
 
         std::tuple<bool, size_t> charge_scalar_;
@@ -70,6 +70,7 @@ namespace patapongame {
         void drawFinished();
 
         void drawLogo();
+        void drawBoss();
         void drawPatapon();
         void drawPataponWalking();
 

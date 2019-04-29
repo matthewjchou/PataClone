@@ -10,9 +10,9 @@ void Game::setup() {
     box2d.init();
     box2d.setGravity(45, 10);
     box2d.createBounds();
-    box2d.setFPS(25);
-    //box2dCircle.setPhysics(3, 1, 0.3);
-    //box2dCircle.setup(box2d.getWorld(), 1000, 500, 100);
+    box2d.setFPS(40);
+    box2dCircle.setPhysics(3, 1, 0.3);
+    box2dCircle.setup(box2d.getWorld(), 100, ofGetWindowHeight() / 3, 100);
 
     patapon.can_play_ = true;
     executing_command_ = false;
@@ -42,9 +42,8 @@ void Game::setup() {
     //pon_walking_.load("HataponWalking.png");
     //pon_walking_.crop(30, 27, 254, 445);
     //pon_walking_.resize(3 * pon_walking_.getWidth() / 2, 3 * pon_walking_.getHeight() / 2);
-
-    boss_gigantus_.load("Gigantus.png");
-    boss_gigantus_.resize(2 * boss_gigantus_.getWidth(), 2 * boss_gigantus_.getHeight());
+    boss_ = Boss("Gigantus", 1000, 200, "Gigantus.png");
+    boss_.getImage().resize(2 * boss_.getImage().getWidth(), 2 * boss_.getImage().getHeight());
 
     patapon.input_count_ = 0;
     patapon.total_tempo_diff_ = 0;
@@ -100,10 +99,16 @@ void Game::draw() {
     
 
     if (current_state_ == GameState::IN_PROGRESS) {
+        ofPushStyle();
+        ofSetLineWidth(15);
+        ofSetColor(ofColor::brown);
+        ofDrawLine(0, (3 * ofGetWindowHeight() / 4) - 46, ofGetWindowWidth(), (3 * ofGetWindowHeight() / 4) - 46);
+        ofPopStyle();
+        drawBoss();
         drawPatapon();
         //drawPataponWalking();
-        ofSetColor(ofColor::white);
-        boss_gigantus_.draw(1275, 350);
+
+        drawVolley();
 
         if (ofGetElapsedTimeMillis() - last_beat_time_  <= 100) {
             drawBeatBorder();
@@ -193,6 +198,11 @@ void Game::drawLogo() {
         ofGetWindowHeight() - pon_logo_.getHeight());
 }
 
+void Game::drawBoss() {
+    ofSetColor(ofColor::white);
+    boss_.getImage().draw(1275, 337);
+}
+
 void Game::drawPatapon() {
     ofSetColor(ofColor::white);
     pon_standing_.draw((ofGetWindowWidth() / 4) - (pon_standing_.getWidth() / 2),
@@ -262,15 +272,15 @@ void Game::drawTempoFeedback() {
 void Game::drawVolley() {
     ofFill();
     ofSetColor(ofColor::black);
-    //box2dCircle.draw();
+    box2dCircle.draw();
 }
 
 void Game::executeCommand(const Command command) {
     size_t augmented_damage;
     switch(command) {
         case Command::ATTACK:
-            augmented_damage = pon.getStrength() * patapon.score_scalar_;
-            std::cout << "UNAUGMENTED DAMAGE: " << std::to_string(pon.getStrength()) << std::endl;
+            augmented_damage = pon_.getStrength() * patapon.score_scalar_;
+            std::cout << "UNAUGMENTED DAMAGE: " << std::to_string(pon_.getStrength()) << std::endl;
             std::cout << "BEAT MULTIPLIER DAMAGE: " << std::to_string(augmented_damage) << std::endl;
 
             if (std::get<0>(charge_scalar_)) {
@@ -279,7 +289,7 @@ void Game::executeCommand(const Command command) {
                 std::cout << "CHARGE MULTIPLIER DAMAGE: " << std::to_string(augmented_damage) << std::endl;
             }
 
-            if (!boss.takeDamage(augmented_damage)) {
+            if (!boss_.takeDamage(augmented_damage)) {
                 current_state_ = GameState::FINISHED;
             }   
             break;
@@ -297,6 +307,10 @@ void Game::executeCommand(const Command command) {
         default:
             break;
     }
+}
+
+void Game::contactStart(ofxBox2dContactArgs &e) {
+
 }
 
 void Game::keyPressed(const int key) {
