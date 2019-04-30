@@ -21,6 +21,7 @@ namespace patapongame {
         const size_t kFontSize = 44;
         const double kBeatSpeed = 0.35;
         const double kBeatVolume = 1.0;
+        const size_t kHitboxTransparency = 40;
 
         const std::map<size_t, Drum> kDrumMap  {
             {OF_KEY_UP, Drum::CHAKA},
@@ -53,6 +54,7 @@ namespace patapongame {
         ofSoundPlayer music_player_;
         ofSoundPlayer win_player_;
 
+        ofImage background_image_;
         ofImage pon_logo_;
         ofImage pon_standing_;
         ofImage pon_walking_;
@@ -74,13 +76,17 @@ namespace patapongame {
         void drawFinished();
 
         void drawLogo();
+        void drawBackgroundImage();
         void drawBoss();
+        void drawBossIcon();
+        void drawBossHealthBar();
         void drawGround();
         void drawPatapon();
         void drawPataponWalking();
 
         void drawBeatBorder();
         void drawTempoFeedback();
+        void drawTempoFeedbackBorder();
 
         void drawVolley();
 
@@ -89,6 +95,7 @@ namespace patapongame {
         void contactStart(ofxBox2dContactArgs &e);
 
         void createVolley(size_t score_scalar, std::tuple<bool, size_t> charge_scalar);
+        void destroyVolley();
 
     public:
         //Run once

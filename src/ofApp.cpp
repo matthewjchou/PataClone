@@ -9,11 +9,13 @@ void Game::setup() {
 
     box2d.init();
     box2d.enableEvents();
-    box2d.setGravity(40, 10);
+    box2d.setGravity(35, 6);
     ofRectangle bounding_box(0, 0, ofGetWindowWidth(), (int) std::get<0>(ground_points_).y);
     box2d.createGround(std::get<0>(ground_points_), std::get<1>(ground_points_));
     box2d.createBounds(bounding_box);
-    box2d.setFPS(100);
+    box2d.setFPS(60);
+
+    ofAddListener(box2d.contactStartEvents, this, &Game::contactStart);
 
     patapon.can_play_ = true;
     executing_command_ = false;
@@ -24,28 +26,35 @@ void Game::setup() {
 
     font_.load("arial.ttf", kFontSize);
 
-    beat_player_.load("Metronome.mp3");
+    beat_player_.load("Sounds/Metronome.mp3");
     beat_player_.setSpeed(kBeatSpeed);
     beat_player_.setVolume(kBeatVolume);
 
-    //music_player_.load();
+    music_player_.load("Music/Infectious.mp3");
+    music_player_.setSpeed(0.9);
+    music_player_.setVolume(0.3);
 
-    win_player_.load("FireCrackers.mp3");
+    win_player_.load("Sounds/FireCrackers.mp3");
     win_player_.setVolume(0.6);
 
-    pon_logo_.load("ClearPon.png");
-    pon_logo_.crop(420, 300, 650, 490);
-    pon_logo_.resize(1 * pon_logo_.getWidth() / 2, 1 * pon_logo_.getHeight() / 2);
+    background_image_.load("Images/PataponBackground.jpg");
+    background_image_.resize(2.7 * background_image_.getWidth(), 2.14 * background_image_.getHeight());
 
-    pon_standing_.load("Hatapon.png");
+    pon_logo_.load("Images/PataponLogo.png");
+    pon_logo_.crop(420, 300, 650, 490);
+    pon_logo_.resize(1 * pon_logo_.getWidth() / 3, 1 * pon_logo_.getHeight() / 3);
+
+    pon_standing_.load("Sprites/Hatapon.png");
     pon_standing_.resize(1 * pon_standing_.getWidth() / 4, 1 * pon_standing_.getHeight() / 4);
 
     //pon_walking_.load("HataponWalking.png");
     //pon_walking_.crop(30, 27, 254, 445);
     //pon_walking_.resize(3 * pon_walking_.getWidth() / 2, 3 * pon_walking_.getHeight() / 2);
-    boss_ = Boss("Gigantus", 100, 200, "Gigantus.png");
+    boss_ = Boss("Gigantus", 100, 200, "Sprites/Gigantus.png");
     boss_.getImage().resize(2 * boss_.getImage().getWidth(), 2 * boss_.getImage().getHeight());
-    boss_.getHitbox().setup(box2d.getWorld(), 1275, 337, 750, 650);
+    boss_.getIcon().resize(boss_.getIcon().getWidth() / 4.5, boss_.getIcon().getWidth() / 6);
+    boss_.getHitbox().setup(box2d.getWorld(), ofGetWindowWidth() - 450
+        , ofGetWindowHeight() - 650, 750, 650);
 
     patapon.input_count_ = 0;
     patapon.total_tempo_diff_ = 0;
@@ -77,6 +86,9 @@ void Game::playRhythm() {
         } else if (current_state_ == GameState::FINISHED && !executing_command_) {
             break;
         }
+        if (!music_player_.isPlaying()) {
+            music_player_.play();
+        }
     }
 }
 
@@ -99,16 +111,18 @@ void Game::update() {
     draw();
 }
 
-void Game::draw() {
-    ofBackgroundGradient(ofColor::white, ofColor::gray, OF_GRADIENT_LINEAR);
-    drawLogo();    
-
+void Game::draw() {    
     if (current_state_ == GameState::IN_PROGRESS || executing_command_) {
+        drawBackgroundImage();
+        ofSetColor(ofColor::white);
+        drawLogo();    
         drawBoss();
+        drawBossIcon();
+        drawBossHealthBar();
         drawGround();
 
         drawPatapon();
-        //drawPataponWalking();
+        // drawPataponWalking();
         if (executing_command_ && current_command_ == Command::ATTACK) {
             drawVolley();
         }
@@ -126,6 +140,7 @@ void Game::draw() {
         }
         
     } else if (current_state_ == GameState::FINISHED && !executing_command_) {
+        ofBackgroundGradient(ofColor::white, ofColor::gray, OF_GRADIENT_LINEAR);
         drawFinished();
     }
 }
@@ -186,8 +201,8 @@ void Game::drawDrumName(const bool should_rotate) {
 
 void Game::drawFinished() {
     ofSetColor(ofColor::black);
-    font_.load("kaushan.ttf", 3 * kFontSize);
-    std::string win_message = "You won! Congratulations!";
+    font_.load("Fonts/Kaushan.ttf", 3 * kFontSize);
+    std::string win_message = "Congratulations!";
     font_.drawString(win_message, (ofGetWindowWidth() / 2) 
         - (font_.getStringBoundingBox(win_message, 0, 0).getMaxX() / 2)
         , ofGetWindowHeight() / 2);
@@ -197,8 +212,12 @@ void Game::drawFinished() {
 
 void Game::drawLogo() {
     ofSetColor(ofColor::white);
-    pon_logo_.draw(ofGetWindowWidth() - pon_logo_.getWidth(),
-        ofGetWindowHeight() - pon_logo_.getHeight());
+    pon_logo_.draw(0, 0);
+}
+
+void Game::drawBackgroundImage() {
+    ofSetColor(ofColor::white);
+    background_image_.draw(0, 0);
 }
 
 void Game::drawBoss() {
@@ -206,17 +225,39 @@ void Game::drawBoss() {
     boss_.getImage().draw(1275, 337);
 
     ofEnableAlphaBlending();
-    ofSetColor(ofColor::grey, 0);
+    ofSetColor(ofColor::grey, kHitboxTransparency);
     ofNoFill();
     boss_.getHitbox().draw();
 }
 
+void Game::drawBossIcon() {
+    ofSetColor(ofColor::black);
+    ofNoFill();
+    ofSetLineWidth(5);
+    ofDrawCircle(ofGetWindowWidth() - 155, 200, 85);
+    ofSetColor(ofColor::white);
+    ofFill();
+    ofDrawCircle(ofGetWindowWidth() - 155, 200, 85);
+    ofSetColor(ofColor::white);
+    boss_.getIcon().draw(ofGetWindowWidth() - 235, 140);
+}
+
+void Game::drawBossHealthBar() {
+    ofSetColor(ofColor::black);
+    ofNoFill();
+    ofSetLineWidth(10);
+    ofRectangle health_bar_outline = ofRectangle(ofGetWindowWidth() - 250, 55, 190, 35);
+    ofDrawRectRounded(health_bar_outline, 10);
+    ofSetColor(ofColor::green);
+    ofFill();
+    ofRectangle health_bar = ofRectangle(ofGetWindowWidth() - 250, 60, 190 / ((boss_.getMaxHealth() + 0.1) / boss_.getHealth()), 25);
+    ofDrawRectRounded(health_bar, 10);
+}
+
 void Game::drawGround() {
-    ofPushStyle();
-    ofSetLineWidth(25);
-    ofSetColor(ofColor::dimGrey);
-    ofDrawLine(0, (3 * ofGetWindowHeight() / 4) - 46, ofGetWindowWidth(), (3 * ofGetWindowHeight() / 4) - 46);
-    ofPopStyle();
+    ofSetColor(ofColor::black);
+    ofFill();
+    ofDrawRectangle(std::get<0>(ground_points_), ofGetWindowWidth(), 2000);
 }
 
 void Game::drawPatapon() {
@@ -232,16 +273,17 @@ void Game::drawPataponWalking() {
 }
 
 void Game::drawBeatBorder() {
-    ofSetColor(ofColor::black);
+    ofSetLineWidth(2);
+    ofSetColor(ofColor::white);
     ofNoFill();
 
-    ofDrawRectangle(ofGetWindowWidth() / 45, ofGetWindowHeight() / 30,
-        ofGetWindowWidth() - (2 * ofGetWindowWidth() / 45),
-        ofGetWindowHeight() - (2 * ofGetWindowHeight() / 30));
+    ofDrawRectangle(ofGetWindowWidth() / 95, ofGetWindowHeight() / 70,
+        ofGetWindowWidth() - (2 * ofGetWindowWidth() / 95),
+        ofGetWindowHeight() - (2 * ofGetWindowHeight() / 70));
 
-    ofDrawRectangle(ofGetWindowWidth() / 40, ofGetWindowHeight() / 25,
-        ofGetWindowWidth() - (2 * ofGetWindowWidth() / 40),
-        ofGetWindowHeight() - (2 * ofGetWindowHeight() / 25));
+    ofDrawRectangle(ofGetWindowWidth() / 78, ofGetWindowHeight() / 55,
+        ofGetWindowWidth() - (2 * ofGetWindowWidth() / 78),
+        ofGetWindowHeight() - (2 * ofGetWindowHeight() / 55));
 
     beat_drawn_ = false;
 }
@@ -254,9 +296,7 @@ void Game::drawTempoFeedback() {
             output = "Perfect!";
             ofSetColor(ofColor::green);
             if (beat_drawn_) {
-                ofDrawRectangle(ofGetWindowWidth() / 53, ofGetWindowHeight() / 38, 
-                    ofGetWindowWidth() - (2 * ofGetWindowWidth() / 53), 
-                    ofGetWindowHeight() - (2 * ofGetWindowHeight() / 38));
+                drawTempoFeedbackBorder();
             }
             break;
 
@@ -264,9 +304,7 @@ void Game::drawTempoFeedback() {
             output = "Good!";
             ofSetColor(ofColor::yellow);
             if (beat_drawn_) {
-                ofDrawRectangle(ofGetWindowWidth() / 53, ofGetWindowHeight() / 38, 
-                    ofGetWindowWidth() - (2 * ofGetWindowWidth() / 53), 
-                    ofGetWindowHeight() - (2 * ofGetWindowHeight() / 38));
+                drawTempoFeedbackBorder();
             }
             break;
 
@@ -274,9 +312,7 @@ void Game::drawTempoFeedback() {
             output = "Poor";     
             ofSetColor(ofColor::red);
             if (beat_drawn_) {
-                ofDrawRectangle(ofGetWindowWidth() / 53, ofGetWindowHeight() / 38, 
-                    ofGetWindowWidth() - (2 * ofGetWindowWidth() / 53), 
-                    ofGetWindowHeight() - (2 * ofGetWindowHeight() / 38));
+                drawTempoFeedbackBorder();
             }
             break;
     }
@@ -285,22 +321,38 @@ void Game::drawTempoFeedback() {
         - (font_.getStringBoundingBox(output, 0, 0).getMaxX() / 2), ofGetWindowHeight() / 2); 
 }
 
+void Game::drawTempoFeedbackBorder() {
+    ofSetLineWidth(2);
+    ofDrawRectangle(ofGetWindowWidth() / 60, ofGetWindowHeight() / 40, 
+        ofGetWindowWidth() - (2 * ofGetWindowWidth() / 60), 
+        ofGetWindowHeight() - (2 * ofGetWindowHeight() / 40));
+}
+
 void Game::drawVolley() {
     ofFill();
     ofSetColor(ofColor::black);
     for (size_t i = 0; i < circles_.size(); i++) {
+        
         circles_.at(i)->draw();
+        ofPushStyle();
+
+        ofNoFill();
+        ofSetLineWidth(5);
+        ofSetColor(ofColor::white);
+        ofDrawCircle(circles_.at(i)->getPosition(), 25);
+        ofPopStyle();
     }
 }
 
 void Game::executeCommand(const Command command) {
-    size_t augmented_damage;
+    int augmented_damage;
+    executing_command_ = true;
+    current_command_ = command;
+
     switch(command) {
         case Command::ATTACK:
             createVolley(patapon.score_scalar_, charge_scalar_);
-
             augmented_damage = pon_.getStrength() * patapon.score_scalar_;
-
 
             std::cout << "UNAUGMENTED DAMAGE: " << std::to_string(pon_.getStrength()) << std::endl;
             std::cout << "BEAT MULTIPLIER DAMAGE: " << std::to_string(augmented_damage) << std::endl;
@@ -311,10 +363,10 @@ void Game::executeCommand(const Command command) {
                 std::cout << "CHARGE MULTIPLIER DAMAGE: " << std::to_string(augmented_damage) << std::endl;
             }
 
-
             if (!boss_.takeDamage(augmented_damage)) {
                 current_state_ = GameState::FINISHED;
             }   
+            std::cout << "BOSS HEALTH: " << std::to_string(boss_.getHealth()) << std::endl;
             break;
         
         case Command::CHARGE:
@@ -333,11 +385,15 @@ void Game::executeCommand(const Command command) {
 }
 
 void Game::contactStart(ofxBox2dContactArgs &e) {
-
+    if (e.a != nullptr && e.b != nullptr) {        
+        destroyVolley();
+        update();
+    }
 }
 
 void Game::createVolley(size_t score_scalar, std::tuple<bool, size_t> charge_scalar) {
     int volley_size = 0;
+    circles_.clear();
 
     if (score_scalar == patapon.kMaxPointMultiplier) {
         volley_size += 2;
@@ -349,7 +405,7 @@ void Game::createVolley(size_t score_scalar, std::tuple<bool, size_t> charge_sca
         volley_size += std::get<1>(charge_scalar);
     }
 
-    for (int i = 0; i < volley_size; i++) {
+    for (size_t i = 0; i < volley_size; i++) {
         auto circle = std::make_shared<ofxBox2dCircle>();
         int random_pos = norm_distr_(generator_);
         circle.get()->setPhysics(3, 0, 0.5);
@@ -358,6 +414,9 @@ void Game::createVolley(size_t score_scalar, std::tuple<bool, size_t> charge_sca
     }
 }
 
+void Game::destroyVolley() {
+    circles_.clear();
+}
 
 void Game::keyPressed(const int key) {
     auto it = kDrumMap.find(key);
@@ -372,8 +431,6 @@ void Game::keyPressed(const int key) {
 
         Command command = patapon.handleMechanics(tempo_feedback_, it->second, tempo_diff);
         if (command != Command::NOTHING && command != Command::FAIL) {
-            executing_command_ = true;
-            current_command_ = command;
             executeCommand(command);
         }
         
