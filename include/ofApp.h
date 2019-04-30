@@ -31,11 +31,13 @@ namespace patapongame {
 
         std::mt19937 generator_;
         std::uniform_int_distribution<> distr_;
+        std::normal_distribution<> norm_distr_;
 
         ofTrueTypeFont font_;
 
         GameState current_state_;
         Feedback tempo_feedback_;
+        Command current_command_;
 
         bool beat_drawn_;
         bool should_rotate_;
@@ -43,7 +45,6 @@ namespace patapongame {
 
         Drum drum_played_;
         int drum_theta_;
-        size_t beat_count_;
 
         double time_since_keypress_;
         double last_beat_time_;
@@ -62,15 +63,19 @@ namespace patapongame {
 
         ofxBox2d box2d;
         ofxBox2dCircle box2dCircle;
-        //std::vector<shared_ptr<Arrow>>
+        std::vector<std::shared_ptr<ofxBox2dCircle>> circles_;
 
         std::tuple<bool, size_t> charge_scalar_;
+        std::tuple<ofPoint, ofPoint> ground_points_ = std::make_tuple(
+            ofPoint(0, (3 * ofGetWindowHeight() / 4) - 46, 0)
+            , ofPoint(ofGetWindowWidth(), (3 * ofGetWindowHeight() / 4) - 46, 0));
         
         void drawDrumName(const bool should_rotate);
         void drawFinished();
 
         void drawLogo();
         void drawBoss();
+        void drawGround();
         void drawPatapon();
         void drawPataponWalking();
 
@@ -82,6 +87,8 @@ namespace patapongame {
         void executeCommand(const Command command);
 
         void contactStart(ofxBox2dContactArgs &e);
+
+        void createVolley(size_t score_scalar, std::tuple<bool, size_t> charge_scalar);
 
     public:
         //Run once

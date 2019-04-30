@@ -11,6 +11,7 @@ Boss::Boss(std::string set_name, size_t set_health, size_t set_strength, std::st
     health_ = set_health;
     strength_ = set_strength;
     image_.load(image_name);
+    hitbox_.setPhysics(3, 0.5, 0.3);
 }
 
 std::string Boss::getName() {
@@ -27,6 +28,10 @@ size_t Boss::getStrength() {
 
 ofImage & Boss::getImage() {
     return image_;
+}
+
+ofxBox2dRect & Boss::getHitbox() {
+    return hitbox_;
 }
 
 bool Boss::takeDamage(size_t attack_strength) {

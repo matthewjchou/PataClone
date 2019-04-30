@@ -58,7 +58,7 @@ TEST_CASE("Commands") {
         REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PATA);
         REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
-        combo.push_back(Drum::PATA);
+        combo.push_back(Drum::PATA); 
         REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::PON);
         REQUIRE(Command::MOVE == patapon.determineCommand(combo));
