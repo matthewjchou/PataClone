@@ -18,10 +18,10 @@ namespace patapongame {
     };
 
     class Game : public ofBaseApp {
-        const size_t kFontSize = 44;
+        const size_t kFontSize = 55;
         const double kBeatSpeed = 0.35;
         const double kBeatVolume = 1.0;
-        const size_t kHitboxTransparency = 40;
+        const size_t kHitboxTransparency = 0;
 
         const std::map<size_t, Drum> kDrumMap  {
             {OF_KEY_UP, Drum::CHAKA},
@@ -43,9 +43,12 @@ namespace patapongame {
         bool beat_drawn_;
         bool should_rotate_;
         bool executing_command_;
+        bool collision_;
 
         Drum drum_played_;
         int drum_theta_;
+        //int volley_transparency_counter_;
+        int transparency_tick_;
 
         double time_since_keypress_;
         double last_beat_time_;
@@ -53,6 +56,7 @@ namespace patapongame {
         ofSoundPlayer beat_player_;
         ofSoundPlayer music_player_;
         ofSoundPlayer win_player_;
+        ofSoundPlayer impact_player_;
 
         ofImage background_image_;
         ofImage pon_logo_;
@@ -93,6 +97,7 @@ namespace patapongame {
         void executeCommand(const Command command);
 
         void contactStart(ofxBox2dContactArgs &e);
+        void contactEnd(ofxBox2dContactArgs &e);
 
         void createVolley(size_t score_scalar, std::tuple<bool, size_t> charge_scalar);
         void destroyVolley();

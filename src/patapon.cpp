@@ -3,7 +3,7 @@
 using namespace patapongame;
 
 Feedback Patapon::calculateTempoFeedback(const int tempo_diff) {  
-    if (!can_play_ || tempo_diff < 0 || (tempo_diff >= kNoPointTime && tempo_diff < kEarlyPointTime)) {
+    if (tempo_diff < 0 || (tempo_diff >= kNoPointTime && tempo_diff < kEarlyPointTime)) {
         return Feedback::POOR;
     } else if (tempo_diff <= kMaxPointTime) {
         return Feedback::PERFECT;
@@ -18,8 +18,6 @@ size_t Patapon::calculateScoreScalar(const size_t total_tempo_diff) {
     std::cout << "AVG: " << avg_diff << std::endl;
     if (avg_diff >= 0 && avg_diff <= kMaxPointTime) {
         return kMaxPointMultiplier;
-    } else if (avg_diff >= kNoPointTime) {
-        return 0;
     }
 
     return kNormalPointMultiplier;
@@ -79,34 +77,34 @@ Command Patapon::handleMechanics(const Feedback feedback, const Drum drum, const
     if (feedback == Feedback::POOR) { //If beat is missed, reset the counter and the combo 
             resetCombo();
 
-        } else {
+    } else {
             total_tempo_diff_ += tempo_diff;
             input_count_++;
             combo_.push_back(drum);
+    }
+
+    Command current_command = determineCommand(combo_);  
+    if (current_command == Command::FAIL) { //If the notes aren't part of a command, reset combo
+        resetCombo();
+        std::cout << tempConvertCommand(current_command) << std::endl << std::endl;
+    } else if (current_command != Command::NOTHING) {
+        score_scalar_ = calculateScoreScalar(total_tempo_diff_);
+
+        std::string toPrint;
+        for (auto i : combo_) {
+            toPrint += tempConvert(i);
+            toPrint += " ";
         }
+        toPrint += '\n';
+        toPrint += tempConvertCommand(current_command);
+        toPrint += '\n';
 
-        Command current_command = determineCommand(combo_);  
-        if (current_command == Command::FAIL) { //If the notes aren't part of a command, reset combo
-            resetCombo();
-            std::cout << tempConvertCommand(current_command) << std::endl << std::endl;
-        } else if (current_command != Command::NOTHING) {
-            score_scalar_ = calculateScoreScalar(total_tempo_diff_);
-    
-            std::string toPrint;
-            for (auto i : combo_) {
-                toPrint += tempConvert(i);
-                toPrint += " ";
-            }
-            toPrint += '\n';
-            toPrint += tempConvertCommand(current_command);
-            toPrint += '\n';
+        std::cout << toPrint << std::endl;
 
-            std::cout << toPrint << std::endl;
+        resetCombo();
 
-            resetCombo();
-
-            return current_command;
-        }
+        return current_command;
+    }
 
     return Command::NOTHING;
 }

@@ -77,7 +77,6 @@ namespace patapongame {
             return "";
         }
 
-        bool can_play_;
         bool display_scalar_;
 
         size_t input_count_;

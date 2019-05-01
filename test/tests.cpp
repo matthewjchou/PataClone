@@ -12,11 +12,6 @@ TEST_CASE("CalculateScoreScalar") {
         REQUIRE(patapon.kMaxPointMultiplier == patapon.calculateScoreScalar(200 * 4));
     }
 
-    SECTION("No multiplier") {
-        REQUIRE(0 == patapon.calculateScoreScalar(425 * 4));
-        REQUIRE(0 == patapon.calculateScoreScalar(499 * 4));
-    }
-
     SECTION("Regular multiplier") {
         REQUIRE(1 == patapon.calculateScoreScalar(201 * 4));
         REQUIRE(1 == patapon.calculateScoreScalar(350 * 4));
@@ -25,9 +20,7 @@ TEST_CASE("CalculateScoreScalar") {
     }
 }
 
-TEST_CASE("CalculateTempoFeedback") {
-    patapon.can_play_ = true;
-    
+TEST_CASE("CalculateTempoFeedback") {    
     SECTION("Perfect") {
         REQUIRE(Feedback::PERFECT == patapon.calculateTempoFeedback(0));
         REQUIRE(Feedback::PERFECT == patapon.calculateTempoFeedback(100));
@@ -113,5 +106,12 @@ TEST_CASE("Commands") {
         REQUIRE(Command::NOTHING == patapon.determineCommand(combo));
         combo.push_back(Drum::CHAKA);
         REQUIRE(Command::FAIL == patapon.determineCommand(combo));
+    }
+}
+
+TEST_CASE("HandleMechanics") {
+    SECTION("POOR input") {
+        Command command = patapon.handleMechanics(Feedback::POOR, Drum::PATA, 1);
+        REQUIRE(command == Command::FAIL);
     }
 }

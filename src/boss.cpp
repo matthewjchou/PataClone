@@ -45,6 +45,8 @@ ofxBox2dRect & Boss::getHitbox() {
 }
 
 bool Boss::takeDamage(int attack_strength) {
+    std::cout << "AUGMENTED DAMAGE: " << std::to_string(attack_strength) << std::endl;
+
     health_ -= attack_strength;
     std::cout << "TAKE DAMAGE HEALTH: " << std::to_string(health_) << std::endl;
     if (health_ <= 0) {

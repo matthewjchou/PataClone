@@ -15,9 +15,11 @@ void Game::setup() {
     box2d.createBounds(bounding_box);
     box2d.setFPS(60);
 
-    ofAddListener(box2d.contactStartEvents, this, &Game::contactStart);
+    collision_ = false;
 
-    patapon.can_play_ = true;
+    ofAddListener(box2d.contactStartEvents, this, &Game::contactStart);
+    ofAddListener(box2d.contactEndEvents, this, &Game::contactEnd);
+
     executing_command_ = false;
 
     srand(time(NULL));
@@ -36,6 +38,8 @@ void Game::setup() {
 
     win_player_.load("Sounds/FireCrackers.mp3");
     win_player_.setVolume(0.6);
+
+    impact_player_.load("Sounds/MirrorShatter.mp3");
 
     background_image_.load("Images/PataponBackground.jpg");
     background_image_.resize(2.7 * background_image_.getWidth(), 2.14 * background_image_.getHeight());
@@ -71,7 +75,6 @@ void Game::playRhythm() {
         if (!beat_player_.isPlaying()) {
             beat_player_.play();
             last_beat_time_ = ofGetElapsedTimeMillis();
-            patapon.can_play_ = true;
             if (executing_command_) {
                 beat_count++;
 
@@ -123,9 +126,12 @@ void Game::draw() {
 
         drawPatapon();
         // drawPataponWalking();
-        if (executing_command_ && current_command_ == Command::ATTACK) {
-            drawVolley();
+        if (executing_command_) {
+            if (current_command_ == Command::ATTACK) {
+                drawVolley();
+            }
         }
+
         if (ofGetElapsedTimeMillis() - last_beat_time_  <= 100) {
             drawBeatBorder();
             beat_drawn_ = true;
@@ -140,7 +146,7 @@ void Game::draw() {
         }
         
     } else if (current_state_ == GameState::FINISHED && !executing_command_) {
-        ofBackgroundGradient(ofColor::white, ofColor::gray, OF_GRADIENT_LINEAR);
+        ofBackgroundGradient(ofColor::blanchedAlmond, ofColor::red, OF_GRADIENT_CIRCULAR);
         drawFinished();
     }
 }
@@ -233,7 +239,7 @@ void Game::drawBoss() {
 void Game::drawBossIcon() {
     ofSetColor(ofColor::black);
     ofNoFill();
-    ofSetLineWidth(5);
+    ofSetLineWidth(10);
     ofDrawCircle(ofGetWindowWidth() - 155, 200, 85);
     ofSetColor(ofColor::white);
     ofFill();
@@ -248,8 +254,13 @@ void Game::drawBossHealthBar() {
     ofSetLineWidth(10);
     ofRectangle health_bar_outline = ofRectangle(ofGetWindowWidth() - 250, 55, 190, 35);
     ofDrawRectRounded(health_bar_outline, 10);
-    ofSetColor(ofColor::green);
+
+    ofSetColor(ofColor::white);
     ofFill();
+    ofRectangle health_bar_background = ofRectangle(ofGetWindowWidth() - 250, 60, 190, 25);
+    ofDrawRectRounded(health_bar_background, 10);
+
+    ofSetColor(ofColor::green);
     ofRectangle health_bar = ofRectangle(ofGetWindowWidth() - 250, 60, 190 / ((boss_.getMaxHealth() + 0.1) / boss_.getHealth()), 25);
     ofDrawRectRounded(health_bar, 10);
 }
@@ -329,44 +340,48 @@ void Game::drawTempoFeedbackBorder() {
 }
 
 void Game::drawVolley() {
-    ofFill();
-    ofSetColor(ofColor::black);
+    int transparency_level = 255;
+    if (collision_) {
+        transparency_level -= transparency_tick_;
+        transparency_tick_ += 10;
+
+        if (transparency_tick_ > 220) {
+            collision_ = false;
+            destroyVolley();
+        }
+    }
+
     for (size_t i = 0; i < circles_.size(); i++) {
-        
+        ofFill();
+        ofSetColor(ofColor::black, transparency_level);
         circles_.at(i)->draw();
-        ofPushStyle();
 
         ofNoFill();
         ofSetLineWidth(5);
-        ofSetColor(ofColor::white);
+        ofSetColor(ofColor::white, transparency_level);
         ofDrawCircle(circles_.at(i)->getPosition(), 25);
-        ofPopStyle();
     }
 }
 
 void Game::executeCommand(const Command command) {
-    int augmented_damage;
     executing_command_ = true;
     current_command_ = command;
 
     switch(command) {
         case Command::ATTACK:
+            int augmented_damage;
             createVolley(patapon.score_scalar_, charge_scalar_);
             augmented_damage = pon_.getStrength() * patapon.score_scalar_;
-
-            std::cout << "UNAUGMENTED DAMAGE: " << std::to_string(pon_.getStrength()) << std::endl;
-            std::cout << "BEAT MULTIPLIER DAMAGE: " << std::to_string(augmented_damage) << std::endl;
 
             if (std::get<0>(charge_scalar_)) {
                 augmented_damage *= std::get<1>(charge_scalar_);
                 charge_scalar_ = std::make_tuple(false, 1);
-                std::cout << "CHARGE MULTIPLIER DAMAGE: " << std::to_string(augmented_damage) << std::endl;
             }
 
             if (!boss_.takeDamage(augmented_damage)) {
                 current_state_ = GameState::FINISHED;
             }   
-            std::cout << "BOSS HEALTH: " << std::to_string(boss_.getHealth()) << std::endl;
+
             break;
         
         case Command::CHARGE:
@@ -385,10 +400,15 @@ void Game::executeCommand(const Command command) {
 }
 
 void Game::contactStart(ofxBox2dContactArgs &e) {
-    if (e.a != nullptr && e.b != nullptr) {        
-        destroyVolley();
-        update();
-    }
+    
+}
+
+void Game::contactEnd(ofxBox2dContactArgs &e) {
+    if (e.a != nullptr && e.b != nullptr) {
+        transparency_tick_ = 10;
+        collision_ = true;
+        impact_player_.play();
+    }   
 }
 
 void Game::createVolley(size_t score_scalar, std::tuple<bool, size_t> charge_scalar) {
@@ -405,11 +425,11 @@ void Game::createVolley(size_t score_scalar, std::tuple<bool, size_t> charge_sca
         volley_size += std::get<1>(charge_scalar);
     }
 
-    for (size_t i = 0; i < volley_size; i++) {
+    for (int i = 0; i < volley_size; i++) {
         auto circle = std::make_shared<ofxBox2dCircle>();
         int random_pos = norm_distr_(generator_);
-        circle.get()->setPhysics(3, 0, 0.5);
-        circle.get()->setup(box2d.getWorld(), 50, random_pos, 25);
+        circle.get()->setPhysics(3, 0.3, 0.5);
+        circle.get()->setup(box2d.getWorld(), 60, random_pos, 25);
         circles_.push_back(circle);
     }
 }
@@ -421,15 +441,16 @@ void Game::destroyVolley() {
 void Game::keyPressed(const int key) {
     auto it = kDrumMap.find(key);
     if (it != kDrumMap.end() && !executing_command_) {
+        std::cout << "KEYPRESSED" << std::endl;
         drum_played_ = it->second;
         time_since_keypress_ = ofGetElapsedTimeMillis();
         int tempo_diff = time_since_keypress_ - last_beat_time_;
-        std::cout << "TIME DIFF: " << tempo_diff << std::endl;
+
         tempo_feedback_ = patapon.calculateTempoFeedback(tempo_diff);
         should_rotate_ = true;
-        patapon.can_play_ = false;
 
         Command command = patapon.handleMechanics(tempo_feedback_, it->second, tempo_diff);
+
         if (command != Command::NOTHING && command != Command::FAIL) {
             executeCommand(command);
         }
