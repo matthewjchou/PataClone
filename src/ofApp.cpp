@@ -267,15 +267,15 @@ void Game::drawBossHealthBar() {
     ofRectangle health_bar_background = ofRectangle(ofGetWindowWidth() - 250, 60, 190, 25);
     ofDrawRectRounded(health_bar_background, 10);
 
-    float currentRatio = std::abs((boss_.getHealth() / boss_.getMaxHealth()));
+    float currentRatio = std::abs(((float) boss_.getHealth() / (float) boss_.getMaxHealth()));
+    std::cout << "CURRENT HEALTH RATIO: " << std::to_string(boss_.getHealth()) << " " << std::to_string(boss_.getMaxHealth()) << std::endl;
     if (currentRatio <= 0.6 && currentRatio >= 0.3) {
-        ofSetColor(ofColor::red);
-    } else if (currentRatio < 0.3) {
         ofSetColor(ofColor::yellow);
+    } else if (currentRatio < 0.3 && currentRatio >= 0.0) {
+        ofSetColor(ofColor::red);
     } else {
         ofSetColor(ofColor::green);
     }
-    ofSetColor(ofColor::green);
     
     ofRectangle health_bar = ofRectangle(ofGetWindowWidth() - 250, 60, 190 / ((boss_.getMaxHealth() + 0.1) / boss_.getHealth()), 25);
     ofDrawRectRounded(health_bar, 10);
