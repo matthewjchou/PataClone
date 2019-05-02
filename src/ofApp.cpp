@@ -21,6 +21,8 @@ void Game::setup() {
     ofAddListener(box2d.contactEndEvents, this, &Game::contactEnd);
 
     executing_command_ = false;
+    should_draw_damage_ = false;
+    allow_damage_ = true;
 
     srand(time(NULL));
     distr_ = std::uniform_int_distribution<>(-60, 60);
@@ -40,6 +42,7 @@ void Game::setup() {
     win_player_.setVolume(0.6);
 
     impact_player_.load("Sounds/MirrorShatter.mp3");
+    impact_player_.setVolume(0.4);
 
     background_image_.load("Images/PataponBackground.jpg");
     background_image_.resize(2.7 * background_image_.getWidth(), 2.14 * background_image_.getHeight());
@@ -54,7 +57,7 @@ void Game::setup() {
     //pon_walking_.load("HataponWalking.png");
     //pon_walking_.crop(30, 27, 254, 445);
     //pon_walking_.resize(3 * pon_walking_.getWidth() / 2, 3 * pon_walking_.getHeight() / 2);
-    boss_ = Boss("Gigantus", 100, 200, "Sprites/Gigantus.png");
+    boss_ = Boss("Gigantus", 300, 200, "Sprites/Gigantus.png");
     boss_.getImage().resize(2 * boss_.getImage().getWidth(), 2 * boss_.getImage().getHeight());
     boss_.getIcon().resize(boss_.getIcon().getWidth() / 4.5, boss_.getIcon().getWidth() / 6);
     boss_.getHitbox().setup(box2d.getWorld(), ofGetWindowWidth() - 450
@@ -83,6 +86,7 @@ void Game::playRhythm() {
                 if (beat_count == 5) {
                     beat_count = 0;
                     executing_command_ = false;
+                    allow_damage_ = true;
                 }
             }
 
@@ -129,6 +133,9 @@ void Game::draw() {
         if (executing_command_) {
             if (current_command_ == Command::ATTACK) {
                 drawVolley();
+                if (should_draw_damage_) {
+                    drawDamageTaken(augmented_damage_);
+                }
             }
         }
 
@@ -260,9 +267,28 @@ void Game::drawBossHealthBar() {
     ofRectangle health_bar_background = ofRectangle(ofGetWindowWidth() - 250, 60, 190, 25);
     ofDrawRectRounded(health_bar_background, 10);
 
+    // if (std::abs((boss_.getHealth() / boss_.getMaxHealth()) - 0.5) < 0.01 || ) {
+    //     ofSetColor(ofColor::red);
+    // } else if (std::abs((boss_.getHealth() / boss_.getMaxHealth()) - 0.2) < 0.001) {
+    //     ofSetColor(ofColor::yellow);
+    // } else {
+    //     ofSetColor(ofColor::green);
+    // }
     ofSetColor(ofColor::green);
+    
     ofRectangle health_bar = ofRectangle(ofGetWindowWidth() - 250, 60, 190 / ((boss_.getMaxHealth() + 0.1) / boss_.getHealth()), 25);
     ofDrawRectRounded(health_bar, 10);
+}
+
+void Game::drawDamageTaken(int damage) {
+    int transparency_level = 255;
+    if (collision_) {
+        transparency_level -= transparency_tick_;
+    }
+    ofSetColor(ofColor::red);
+    std::string output = "- " + std::to_string(damage);
+    font_.drawString(output, ofGetWindowWidth() - 450
+        - (font_.getStringBoundingBox(output, 0, 0).getMaxX() / 2), 200);
 }
 
 void Game::drawGround() {
@@ -343,10 +369,11 @@ void Game::drawVolley() {
     int transparency_level = 255;
     if (collision_) {
         transparency_level -= transparency_tick_;
-        transparency_tick_ += 10;
+        transparency_tick_ += 5;
 
         if (transparency_tick_ > 220) {
             collision_ = false;
+            should_draw_damage_ = false;
             destroyVolley();
         }
     }
@@ -369,18 +396,16 @@ void Game::executeCommand(const Command command) {
 
     switch(command) {
         case Command::ATTACK:
-            int augmented_damage;
+            std::cout << "HEALTH: " << std::to_string(boss_.getHealth()) << std::endl;
+
             createVolley(patapon.score_scalar_, charge_scalar_);
-            augmented_damage = pon_.getStrength() * patapon.score_scalar_;
+            augmented_damage_ = pon_.getStrength() * patapon.score_scalar_;
 
             if (std::get<0>(charge_scalar_)) {
-                augmented_damage *= std::get<1>(charge_scalar_);
+                augmented_damage_ *= std::get<1>(charge_scalar_);
                 charge_scalar_ = std::make_tuple(false, 1);
-            }
-
-            if (!boss_.takeDamage(augmented_damage)) {
-                current_state_ = GameState::FINISHED;
-            }   
+            }  
+            // Damage impacts calculated on collision 
 
             break;
         
@@ -400,14 +425,22 @@ void Game::executeCommand(const Command command) {
 }
 
 void Game::contactStart(ofxBox2dContactArgs &e) {
-    
+
 }
 
 void Game::contactEnd(ofxBox2dContactArgs &e) {
     if (e.a != nullptr && e.b != nullptr) {
         transparency_tick_ = 10;
         collision_ = true;
-        impact_player_.play();
+        should_draw_damage_ = true;
+
+        if (allow_damage_) {
+            impact_player_.play();
+            allow_damage_ = false;
+            if (!boss_.takeDamage(augmented_damage_)) {
+                current_state_ = GameState::FINISHED;
+            }
+        }
     }   
 }
 

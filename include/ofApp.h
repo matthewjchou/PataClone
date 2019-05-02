@@ -9,6 +9,7 @@
 #include <map>
 #include <array>
 #include <tuple>
+#include <cmath>
 
 namespace patapongame {
     enum class GameState {
@@ -39,16 +40,18 @@ namespace patapongame {
         GameState current_state_;
         Feedback tempo_feedback_;
         Command current_command_;
+        Drum drum_played_;
 
         bool beat_drawn_;
         bool should_rotate_;
+        bool should_draw_damage_;
         bool executing_command_;
         bool collision_;
+        bool allow_damage_;
 
-        Drum drum_played_;
         int drum_theta_;
-        //int volley_transparency_counter_;
         int transparency_tick_;
+        int augmented_damage_;
 
         double time_since_keypress_;
         double last_beat_time_;
@@ -81,10 +84,14 @@ namespace patapongame {
 
         void drawLogo();
         void drawBackgroundImage();
+
         void drawBoss();
         void drawBossIcon();
         void drawBossHealthBar();
+        void drawDamageTaken(int damage);
+
         void drawGround();
+
         void drawPatapon();
         void drawPataponWalking();
 
