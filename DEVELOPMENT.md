@@ -29,3 +29,8 @@
 * Make projectiles on attack
 * Projectiles disappear on hit
 * Game ends after projectiles land, not after command is inputted
+* Sound is played on impact
+* Damage done is displayed for the duration of the impact
+* The balls now fade on impact
+* Added a health bar and mini boss icon in the corner
+    * The health bar changes color based on the percentage of health the boss has at the time
